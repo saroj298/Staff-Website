@@ -55,7 +55,6 @@ async function validateLogin(event){
             }
             const data = await response.json();
             if (data.success) {
-                localStorage.setItem("token", data.encryptedToken);
                 window.location.href = "admin-panel.html";
             }
             else {

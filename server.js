@@ -6,6 +6,7 @@ const fs = require ("fs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
+const cookieParser = require("cookie-parser");
 
 //Import functions from generateKeys.js
 const {generateKeyPair, testKeys, generateJWTKey} = require("./generateKeys.js")
@@ -15,6 +16,9 @@ const app = express();
 
 //Add middleware to parse JSON request bodies
 app.use(express.json());
+
+//Add middleware to handle cookies
+app.use(cookieParser());
 
 //Set port
 const PORT = 3000;
@@ -57,9 +61,8 @@ async function fetchPrivateKey(){return await fsPromise.readFile("private.pem", 
 //Function to check if user is authorised for admin-panel.html
 async function authenticateToken(req, res, next) {
     console.log("\n--Authenticate token start--\n");
-    const authHeader = req.headers["authorization"];
-    console.log("Recived authorization header: " + authHeader);
-    const encryptedToken = authHeader && authHeader.split(" ")[1];
+    const encryptedToken = req.cookies.token;
+    console.log("Recived encrypted token: " + encryptedToken);
     if (!encryptedToken) {
         console.log("No token found");
         console.log("\n--Authenticate token END Fail--\n");
@@ -128,7 +131,15 @@ app.post("/login", async (req, res) => {
             const encryptedToken = await encryptStr(token);
             console.log("User token created");
             console.log("Token: " + encryptedToken);
-            res.json({success: true, message: "Login successful!", encryptedToken});
+
+            //Add token to cookie
+            res.cookie("token", encryptedToken, {
+                httpOnly: true,
+                secure: false, //change to true for https
+                sameSite: "Strict",
+                maxAge: 3600000
+            });
+            res.json({success: true, message: "Login successful!"});
         }
         else {
             console.log("Invalid credentals presented login failed");
