@@ -1,8 +1,0 @@
-Change generateKeyPair to generate a public and private key for each session will
-also need to stop storing in file and just pass directly to the session. Also could do this for JWT token? have 1 key per session
-
-Add encrpytion to token sending
-
-Host on actual web not localhost
-
-Change from storing token on local to http only cookies
