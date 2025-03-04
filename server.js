@@ -19,7 +19,21 @@ app.use(express.json());
 //Set port
 const PORT = 3000;
 
-//Function do decrypt string using RSAES-OAEP/SHA-256
+//Function to encrypt string using RSAES-OAEP/SHA-256
+async function encryptStr(str) {
+    const publicKey = await fetchPublicKey();
+    const encryptedStr = crypto.publicEncrypt({
+        key: publicKey,
+        padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+        oaepHash: "sha256"
+    }, Buffer.from(str, "utf8"));
+    return encryptedStr.toString("base64");
+}
+
+//Function to fetch public
+async function fetchPublicKey(){return await fsPromise.readFile("public/public.pem", "utf8");}
+
+//Function to decrypt string using RSAES-OAEP/SHA-256
 async function decryptStr(encryptedStrBase64) {
     console.log("\n--Starting Decryption--\n");
     const privateKey = await fetchPrivateKey();
@@ -41,27 +55,34 @@ async function decryptStr(encryptedStrBase64) {
 async function fetchPrivateKey(){return await fsPromise.readFile("private.pem", "utf8");}
 
 //Function to check if user is authorised for admin-panel.html
-function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next) {
     console.log("\n--Authenticate token start--\n");
     const authHeader = req.headers["authorization"];
     console.log("Recived authorization header: " + authHeader);
-    const token = authHeader && authHeader.split(" ")[1];
-    if (!token) {
+    const encryptedToken = authHeader && authHeader.split(" ")[1];
+    if (!encryptedToken) {
         console.log("No token found");
         console.log("\n--Authenticate token END Fail--\n");
         return res.status(401).json({success: false, message: "Access denied no token provided"});
     }
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) {
-            console.log("Invalid or expired token found");
-            console.log("\n--Authenticate token END Fail--\n");
-            return res.status(403).json({success: false, message: "Access denied invalid or expired token."});
-        }
-        console.log("Valid token found");
-        req.user = user;
-        console.log("\n--Authenticate token END Success--\n");
-        next();
-    });
+    try {
+        const token = await decryptStr(encryptedToken);
+        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+            if (err) {
+                console.log("Invalid or expired token found");
+                console.log("\n--Authenticate token END Fail--\n");
+                return res.status(403).json({success: false, message: "Access denied invalid or expired token."});
+            }
+            console.log("Valid token found");
+            req.user = user;
+            console.log("\n--Authenticate token END Success--\n");
+            next();
+        });
+    }
+    catch (error) {
+        console.error("Token decryption error: " + error);
+        return res.status(403).json({success: false, message: "Invalid or expired token."});
+    }
 }
 
 //Serve admin-panel to only authorised users
@@ -104,9 +125,10 @@ app.post("/login", async (req, res) => {
                 process.env.JWT_SECRET,
                 {expiresIn: "1h"}
             );
+            const encryptedToken = await encryptStr(token);
             console.log("User token created");
-            console.log("Token: " + token);
-            res.json({success: true, message: "Login successful!", token});
+            console.log("Token: " + encryptedToken);
+            res.json({success: true, message: "Login successful!", encryptedToken});
         }
         else {
             console.log("Invalid credentals presented login failed");
