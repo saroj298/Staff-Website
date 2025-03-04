@@ -5,7 +5,7 @@ const fsPromise = require("fs/promises");
 const fs = require ("fs");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const dotenv = require('dotenv');
 
 //Import functions from generateKeys.js
 const {generateKeyPair, testKeys, generateJWTKey} = require("./generateKeys.js")
@@ -98,6 +98,7 @@ app.post("/login", async (req, res) => {
         const validPassword = "password123";
         if (email === validEmail && password === validPassword) {
             console.log("Valid credentals presented login success");
+            console.log("env file exists contianing JWT key: " + !!process.env.JWT_SECRET);
             const token = jwt.sign(
                 {email},
                 process.env.JWT_SECRET,
@@ -135,6 +136,7 @@ app.listen(PORT, async () => {
     else {
         console.log(".env file already exists. Skipping key generation.");
     }
+    dotenv.config()
     console.log ("Key generation success.");
     console.log("\n---Key generation END---\n")
 
