@@ -23,6 +23,28 @@ app.use(cookieParser());
 //Set port
 const PORT = 3000;
 
+//Function to print log by appending time and message
+function timeLog (str) {
+    const now = new Date();
+
+    function pad(num, size) {
+        let s = num.toString();
+        while (s.length < size) {
+            s = "0" + s;
+        }
+        return s;
+    }
+    const day = pad(now.getDate(), 2);
+    const month = pad(now.getMonth() +1,2);
+    const year = now.getFullYear();
+    const hours = pad(now.getHours(), 2);
+    const minutes = pad(now.getMinutes(), 2);
+    const seconds = pad(now.getSeconds(), 2);
+    const milliseconds = pad(now.getMilliseconds(), 3);
+    const time = day +"/"+month+"/"+year+" "+hours+":"+minutes+":"+seconds+"."+milliseconds;
+    console.log("[" + time + "] " + str);
+}
+
 //Function to encrypt string using RSAES-OAEP/SHA-256
 async function encryptStr(str) {
     const publicKey = await fetchPublicKey();
@@ -39,19 +61,19 @@ async function fetchPublicKey(){return await fsPromise.readFile("public/public.p
 
 //Function to decrypt string using RSAES-OAEP/SHA-256
 async function decryptStr(encryptedStrBase64) {
-    console.log("\n--Starting Decryption--\n");
+    timeLog("--Starting Decryption--");
     const privateKey = await fetchPrivateKey();
-    console.log("Private key fetched");
-    console.log("EncrpytedStrBase64: " + encryptedStrBase64);
+    timeLog("Private key fetched");
+    timeLog("EncrpytedStrBase64: " + encryptedStrBase64);
     const encryptedStr = Buffer.from(encryptedStrBase64, "base64");
-    console.log("Converted back from base64");
+    timeLog("Converted back from base64");
     const decryptedStr = crypto.privateDecrypt({
         key: privateKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
         oaepHash: "sha256"
     }, encryptedStr).toString("utf8");
-    console.log("Decrypted string");
-    console.log("\n--Decryption END--\n");
+    timeLog("Decrypted string");
+    timeLog("--Decryption END--");
     return decryptedStr;
 }
 
@@ -60,25 +82,25 @@ async function fetchPrivateKey(){return await fsPromise.readFile("private.pem", 
 
 //Function to check if user is authorised for admin-panel.html
 async function authenticateToken(req, res, next) {
-    console.log("\n--Authenticate token start--\n");
+    timeLog("--Authenticate token start--");
     const encryptedToken = req.cookies.token;
-    console.log("Recived encrypted token: " + encryptedToken);
+    timeLog("Recived encrypted token: " + encryptedToken);
     if (!encryptedToken) {
-        console.log("No token found");
-        console.log("\n--Authenticate token END Fail--\n");
+        timeLog("No token found");
+        timeLog("--Authenticate token END Fail--");
         return res.status(401).json({success: false, message: "Access denied no token provided"});
     }
     try {
         const token = await decryptStr(encryptedToken);
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
             if (err) {
-                console.log("Invalid or expired token found");
-                console.log("\n--Authenticate token END Fail--\n");
+                timeLog("Invalid or expired token found");
+                timeLog("--Authenticate token END Fail--");
                 return res.status(403).json({success: false, message: "Access denied invalid or expired token."});
             }
-            console.log("Valid token found");
+            timeLog("Valid token found");
             req.user = user;
-            console.log("\n--Authenticate token END Success--\n");
+            timeLog("--Authenticate token END Success--");
             next();
         });
     }
@@ -88,11 +110,34 @@ async function authenticateToken(req, res, next) {
     }
 }
 
+//Function to create a token and add it to cookies
+async function createToken(email, res) {
+    timeLog("--Create Token Start--");
+    timeLog("env file exists contianing JWT key: " + !!process.env.JWT_SECRET);
+    const token = jwt.sign(
+        {email},
+        process.env.JWT_SECRET,
+        {expiresIn: "10m"}
+    );
+    timeLog("User token created");
+    const encryptedToken = await encryptStr(token);
+    timeLog("Token encrypted: " + encryptedToken);
+    res.cookie("token", encryptedToken, {
+        httpOnly: true,
+        secure: false, //change to true for https
+        sameSite: "Strict",
+        maxAge: 600000 //10m in millisecconds
+    });
+    timeLog("Token added to cookie");
+    timeLog("--Create Token END--");
+}
+
 //Serve admin-panel to only authorised users
 app.get("/admin-panel.html", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "admin-panel.html"));
 })
 
+//Request to check if token is valid
 app.get("/validate-token", authenticateToken, (req, res) => {
     res.json({success: true, message: "Token is valid"});
 });
@@ -107,71 +152,67 @@ app.use(express.static('public'));
 
 //Handle login
 app.post("/login", async (req, res) => {
-    console.log("\n---Dealing with login request---\n");
+    timeLog("---Dealing with login request---");
     try {
         const {encryptedEmailBase64, encryptedPasswordBase64} = req.body;
-        console.log("Begining password decrypt");
+        timeLog("Begining password decrypt");
         const password = await decryptStr(encryptedPasswordBase64);
-        console.log("Password decrypted");
-        console.log("Begining email decrypt");
+        timeLog("Password decrypted");
+        timeLog("Begining email decrypt");
         const email = await decryptStr(encryptedEmailBase64);
-        console.log("Email decrypted");
+        timeLog("Email decrypted");
         //Dummy values replace with database lookup.
         //Search database for email and find relevent password field and test if password matchs if so return valid entry
         const validEmail = "email@gmail.com";
         const validPassword = "password123";
         if (email === validEmail && password === validPassword) {
-            console.log("Valid credentals presented login success");
-            console.log("env file exists contianing JWT key: " + !!process.env.JWT_SECRET);
-            const token = jwt.sign(
-                {email},
-                process.env.JWT_SECRET,
-                {expiresIn: "1h"}
-            );
-            const encryptedToken = await encryptStr(token);
-            console.log("User token created");
-            console.log("Token: " + encryptedToken);
-
-            //Add token to cookie
-            res.cookie("token", encryptedToken, {
-                httpOnly: true,
-                secure: false, //change to true for https
-                sameSite: "Strict",
-                maxAge: 3600000
-            });
+            timeLog("Valid credentals presented login success");
+            await createToken(email, res);
             res.json({success: true, message: "Login successful!"});
         }
         else {
-            console.log("Invalid credentals presented login failed");
+            timeLog("Invalid credentals presented login failed");
             res.status(401).json({success: false, message: "Invalid email or password."});
         }
     } catch (error) {
-        console.log("An unexpected error occured.");
+        timeLog("An unexpected error occured.");
         console.error("Error: " + error.message);
         res.status(500).json({ success: false, message: "An unexpected server error occurred." });
     }
-    console.log("\n---Login request END---\n")
+    timeLog("---Login request END---")
 });
+
+//Function to check if user has a currently valid token and if they do refresh it
+app.post("/refresh-token", authenticateToken, async (req, res) => {
+    try {
+        await createToken(req.user.email, res);
+        return res.json({success: true, message: "Token refreshed successfully"});
+    }
+    catch (error){
+        console.error("Error refreshing token: " + error);
+        res.status(500).json({success: false, message: "Unable to refresh token"});
+    }
+})
 
 //Start the server
 app.listen(PORT, async () => {
     //TODO remove key generation from server start and add to each session at some point.
     
-    console.log("\n---Begining key generation---\n")
+    timeLog("---Begining key generation---");
     generateKeyPair();
     while (!testKeys()) {
-        console.log("Public & Private key generation failed trying again.");
+        timeLog("Public & Private key generation failed trying again.");
         generateKeyPair();
     }
     if (!fs.existsSync(".env")) {
         await generateJWTKey();
     }
     else {
-        console.log(".env file already exists. Skipping key generation.");
+        timeLog(".env file already exists. Skipping key generation.");
     }
     dotenv.config()
-    console.log ("Key generation success.");
-    console.log("\n---Key generation END---\n")
+    timeLog ("Key generation success.");
+    timeLog("---Key generation END---");
 
-    console.log("\n\nServer is running on: http://localhost:" + PORT +"\n\n");
+    timeLog("Server is running on: http://localhost:" + PORT);
 });

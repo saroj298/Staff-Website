@@ -4,11 +4,19 @@
         <title>Admin Panel</title>
         <meta charset="UTF-8">
         <script src = "adminPanelScripts.js"></script>
+        <link rel = "stylesheet" href = "adminPanelStyles.css">
     </head>
     <main>
+        <div id = "refreshModal" class = "modal">
+            <div class = "modal-content">
+                <p id = "modalMessage">Your session is about to expire. Are you still there?</p>
+                <p id = "countdownTimer"></p>
+                <button id = "stayLoggedInBtn">Yes, keep me logged in</button>
+            </div>
+        </div>
         <header class = "topdisplay">Midland Developers</header>
         <section class = "events">
-            <p>temp</p>
+            <p id = "logoutTimer">temp</p>
         </section>
     </main>
 </html>

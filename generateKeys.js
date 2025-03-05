@@ -4,9 +4,31 @@ const fs = require('fs');
 const forge = require("node-forge");
 const fsPromise = require("fs/promises");
 
+//Function to print log by appending time and message
+function timeLog (str) {
+    const now = new Date();
+
+    function pad(num, size) {
+        let s = num.toString();
+        while (s.length < size) {
+            s = "0" + s;
+        }
+        return s;
+    }
+    const day = pad(now.getDate(), 2);
+    const month = pad(now.getMonth() +1,2);
+    const year = now.getFullYear();
+    const hours = pad(now.getHours(), 2);
+    const minutes = pad(now.getMinutes(), 2);
+    const seconds = pad(now.getSeconds(), 2);
+    const milliseconds = pad(now.getMilliseconds(), 3);
+    const time = day +"/"+month+"/"+year+" "+hours+":"+minutes+":"+seconds+"."+milliseconds;
+    console.log("[" + time + "] " + str);
+}
+
 //Generate public and private keys
 function generateKeyPair() {
-    console.log("--Generate public & private key pair--");
+    timeLog("--Generate public & private key pair--");
     const {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {
         modulusLength: 2048,
         publicKeyEncoding: {
@@ -18,11 +40,11 @@ function generateKeyPair() {
             format: "pem",
         },
     });
-    console.log("Keys generated");
+    timeLog("Keys generated");
     fs.writeFileSync("public/public.pem", publicKey);
     fs.writeFileSync("private.pem", privateKey);
-    console.log("Keys saved");
-    console.log("--Generate public & private key pair END--");
+    timeLog("Keys saved");
+    timeLog("--Generate public & private key pair END--");
 }
 
 //Test keys to ensure they are compatable
@@ -39,18 +61,18 @@ function testKeys() {
 
 //Generate a key for the json web tokens
 async function generateJWTKey() {
-    console.log("\n--Generate JWT key--\n")
+    timeLog("--Generate JWT key--")
     const randomKey = crypto.randomBytes(64).toString("hex");
-    console.log("Random JWT key generated")
+    timeLog("Random JWT key generated")
     const envContent = "JWT_SECRET="+randomKey+"\n";
     try {
         await fsPromise.writeFile(".env", envContent, "utf8");
-        console.log("Random JWT key saved")
+        timeLog("Random JWT key saved")
     }
     catch (error) {
         console.error("Failed to write to .env file: " + error.message);
     }
-    console.log("\n--Generate JWT key END--\n")
+    timeLog("--Generate JWT key END--")
 }
 //Export functions
 module.exports = {generateKeyPair, testKeys, generateJWTKey};
