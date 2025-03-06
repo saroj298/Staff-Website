@@ -1,13 +1,3 @@
-//Function to toggle the display of password
-function showPassword() {
-    var passwordField = document.getElementById("password");
-    if (passwordField.type === "password") {
-        passwordField.type = "text";
-    }
-    else {
-        passwordField.type = "password"
-    }
-}
 //Function to encrypt and return any given string using RSAES-OAEP/SHA-256
 async function encryptString(str){
     const publicKey = await fetchPublicKey();

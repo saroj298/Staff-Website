@@ -1,0 +1,28 @@
+.password-container {
+    position: relative;
+    display: inline-block;
+}
+
+.password-container input {
+    padding-right: 40px;
+}
+
+.toggle-password {
+    position: absolute;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    left: 200px;
+    transform: translateY(-7px);
+}
+
+.toggle-password img {
+    max-width: 40px;
+    max-height: 40px;
+    object-fit: contain;
+}
+
+.toggle-password:focus {
+    outline: none;
+}
