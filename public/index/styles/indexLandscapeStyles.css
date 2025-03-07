@@ -1,3 +1,6 @@
+:root {
+    --scale:1;
+}
 html, body {
     font-family: Arial, Helvetica, sans-serif;
     margin: 0;
@@ -18,21 +21,20 @@ html, body {
     transform-origin: top center;
     z-index: -1;
     overflow: hidden;
-
 }
 .scaleContainer {
-    width: 1920px;
-    height: 1080px;
+    width: calc(1920px*var(--scale));
+    height: calc(1080px*var(--scale));
     overflow: hidden;
     transform-origin: top center;
     position: absolute;
-    top: 133px;
+    top: calc(133px*var(--scale));;
 }
 
 .topbar {
     background-color: darkblue;
     text-align: center;
-    box-shadow: 10px 10px 10px rgba(0,0,0,0.2);
+    box-shadow: calc(10px*var(--scale)) calc(10px*var(--scale)) calc(10px*var(--scale)) rgba(0,0,0,0.2);
     transform-origin: top center;
 }
 .topbar h1 {
@@ -42,51 +44,51 @@ html, body {
     margin: 0;
 }
 .topbar .university {
-    padding-top: 15px;
-    font-size: 50px;
+    padding-top: calc(15px*var(--scale));
+    font-size: calc(50px*var(--scale));
 }
 .topbar .developers {
-    font-size: 25px;
-    padding-bottom: 15px;
+    font-size: calc(25px*var(--scale));
+    padding-bottom: calc(15px*var(--scale));
 }
 .content {
-    padding: 15px;
+    padding: calc(15px*var(--scale));
 }
 .pageTitle {
     text-align: center;
     color: darkcyan;
-    font-size: 30px;
-    margin-bottom: 15px;
+    font-size: calc(30px*var(--scale));
+    margin-bottom: calc(15px*var(--scale));
 }
 
 .loginBox {
     background-color: darkcyan;
     color: white;
-    padding: 20px;
-    margin: 15px auto;
-    border-radius: 40px;
-    max-width: 750px;
-    box-shadow: 15px 15px 15px rgba(0,0,0,0.5);
+    padding: calc(20px*var(--scale));
+    margin: calc(15px*var(--scale)) auto;
+    border-radius: calc(40px*var(--scale));
+    max-width: calc(750px*var(--scale));
+    box-shadow: calc(15px*var(--scale)) calc(15px*var(--scale)) calc(15px*var(--scale)) rgba(0,0,0,0.5);
 }
 
 .loginBox h2 {
     text-align: center;
-    font-size: 35px;
+    font-size: calc(35px*var(--scale));
     color: white;
     font-weight: bold;
 }
 .formGroup {
-    margin-bottom: 30px;
-    margin-left: 118px;
-    margin-right: 75px;
+    margin-bottom: calc(30px*var(--scale));
+    margin-left: calc(118px*var(--scale));
+    margin-right: calc(75px*var(--scale));
 }
 .formGroup label {
     display: block;
-    font-size: 25px;
+    font-size: calc(25px*var(--scale));
 }
 .formGroup input {
-    font-size: 25px;
-    min-width: 500px;
+    font-size: calc(25px*var(--scale));
+    min-width: calc(500px*var(--scale));
 }
 .togglePassword {
     background: transparent;
@@ -95,29 +97,29 @@ html, body {
     position: absolute;
 }
 .togglePassword img {
-    max-width: 50px;
-    max-height: 50px;
-    transform: translateY(-8px);
+    max-width: calc(50px*var(--scale));
+    max-height: calc(50px*var(--scale));
+    transform: translateY(calc(-8px*var(--scale)));
     object-fit: contain;
 }
 .errorDisplay {
     text-align: center;
-    font-size: 25px;
+    font-size: calc(25px*var(--scale));
 }
 .submit {
     display: flex;
-    margin: 25px auto;
+    margin: calc(25px*var(--scale)) auto;
     background-color: darkblue;
     border: none;
     cursor: pointer;
     color: white;
-    min-height: 60px;
-    min-width: 175px;
+    min-height: calc(60px*var(--scale));
+    min-width: calc(175px*var(--scale));
     justify-content: center;
     align-items: center;
-    font-size: 25px;
+    font-size: calc(25px*var(--scale));
     transition: background-color 0.3s ease;
-    border-radius: 40px;
+    border-radius: calc(40px*var(--scale));
 }
 .submit:hover {
     background-color: rgba(0, 0, 139, 0.5);
