@@ -5,8 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleIcon = document.getElementById("passwordToggleIcon");
 
     //show password images
-    const passwordVisable = "passwordVisable.png";
-    const passwordNonVisable = "passwordNonVisable.png";
+    const passwordVisable = "../../index/images/passwordVisable.png";
+    const passwordNonVisable = "../../index/images/passwordNonVisable.png";
 
     //inital password not visable
     toggleIcon.src = passwordNonVisable;

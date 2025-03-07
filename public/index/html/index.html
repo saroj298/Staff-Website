@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Staff Portal</title>
+        <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+        <script src = "../../index/javascript/loginScripts.js"></script>
+        <script src = "../../index/javascript/showPassword.js"></script>
+        <script src = "../../index/javascript/scaleHandler.js"></script>
+        <link rel = "stylesheet" href = "../../index/styles/indexPortraitStyles.css" media = "(max-aspect-ratio: 0.999)">
+        <link rel = "stylesheet" href = "../../index/styles/indexLandscapeStyles.css" media = "(min-aspect-ratio: 1)">
+        <meta charset="UTF-8">
+        <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <header id = "topbar" class = "topbar">
+            <h1 id = "university" class = "university">University of Wolverhampton</h1>
+            <h1 id = "developers" class = "developers">Midland Developers</h1>
+        </header>
+        <div class = "scaleWrapper">
+            <div id = "backgroundImage" class = "backgroundImage"></div>
+            <div id = "scaleContainer" class = "scaleContainer">
+                <main class = "content">
+                    <section class = "pageTitle">
+                        <h2>Staff Portal</h2>
+                    </section>
+                    <section class = "loginBox">
+                        <h2>Log In</h2>
+                        <form id = "loginForm" action autocomplete= "off">
+                            <div class = "formGroup">
+                                <label for = "email">Email</label>
+                                <input placeholder = "Enter Email:" type = "text" id = "email">
+                            </div>
+                            <div class = "formGroup">
+                                <label for = "password">Password</label>
+                                <input placeholder= "Enter Password:" type = "password" id = "password">
+                                <button id = "passwordToggleBtn" class = "togglePassword" type = "button" >
+                                    <img src = "../../index/images/passwordNonVisable.png" alt = "Show Password" id = "passwordToggleIcon">
+                                </button>
+                            </div>
+                            <p class = "errorDisplay" id = "errorDisplay"></p>
+                            <button class = "submit" type = "button" onclick = "validateLogin(event)">Sign In</button>
+                        </form>
+                    </section>
+                </main>
+            </div>
+        </div>
+    </body>
+</html>

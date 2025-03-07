@@ -1,0 +1,124 @@
+html, body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.scaleWrapper {
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+.backgroundImage {
+    background: url("../../index/images/indexBackground.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 0px;
+    transform-origin: top center;
+    z-index: -1;
+    overflow: hidden;
+
+}
+.scaleContainer {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: top center;
+    position: absolute;
+    top: 133px;
+}
+
+.topbar {
+    background-color: darkblue;
+    text-align: center;
+    box-shadow: 10px 10px 10px rgba(0,0,0,0.2);
+    transform-origin: top center;
+}
+.topbar h1 {
+    font-weight: 800;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+.topbar .university {
+    padding-top: 15px;
+    font-size: 50px;
+}
+.topbar .developers {
+    font-size: 25px;
+    padding-bottom: 15px;
+}
+.content {
+    padding: 15px;
+}
+.pageTitle {
+    text-align: center;
+    color: darkcyan;
+    font-size: 30px;
+    margin-bottom: 15px;
+}
+
+.loginBox {
+    background-color: darkcyan;
+    color: white;
+    padding: 20px;
+    margin: 15px auto;
+    border-radius: 40px;
+    max-width: 750px;
+    box-shadow: 15px 15px 15px rgba(0,0,0,0.5);
+}
+
+.loginBox h2 {
+    text-align: center;
+    font-size: 35px;
+    color: white;
+    font-weight: bold;
+}
+.formGroup {
+    margin-bottom: 30px;
+    margin-left: 118px;
+    margin-right: 75px;
+}
+.formGroup label {
+    display: block;
+    font-size: 25px;
+}
+.formGroup input {
+    font-size: 25px;
+    min-width: 500px;
+}
+.togglePassword {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+}
+.togglePassword img {
+    max-width: 50px;
+    max-height: 50px;
+    transform: translateY(-8px);
+    object-fit: contain;
+}
+.errorDisplay {
+    text-align: center;
+    font-size: 25px;
+}
+.submit {
+    display: flex;
+    margin: 25px auto;
+    background-color: darkblue;
+    border: none;
+    cursor: pointer;
+    color: white;
+    min-height: 60px;
+    min-width: 175px;
+    justify-content: center;
+    align-items: center;
+    font-size: 25px;
+    transition: background-color 0.3s ease;
+    border-radius: 40px;
+}
+.submit:hover {
+    background-color: rgba(0, 0, 139, 0.5);
+}

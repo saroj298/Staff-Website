@@ -150,6 +150,11 @@ app.get("/publicKey", (req, res) => {
 //Serve files
 app.use(express.static('public'));
 
+//Serve index at page visit
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public/index/html/index.html"));
+});
+
 //Handle login
 app.post("/login", async (req, res) => {
     timeLog("---Dealing with login request---");

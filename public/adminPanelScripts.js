@@ -19,13 +19,13 @@ async function refreshToken() {
             credentials: "include"
         });
         if (!response.ok) {
-            window.location.href = "index.html";
+            window.location.href = "index/html/index.html";
             return;
         }
     }
     catch (error) {
         console.error("Error refreshing token: " + error);
-        window.location.href = "index.html";
+        window.location.href = "index/html/index.html";
     }
 }
 
@@ -87,7 +87,7 @@ function startTokenRefreshChecker() {
                 return;
             }
             else {
-                window.location.href = "index.html";
+                window.location.href = "index/html/index.html";
             }
         }
     }, checkInterval);
@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //Check for invalid/expired token
         if(!response.ok) {
-            window.location.href = "index.html";
+            window.location.href = "index/html/index.html";
             return;
         }
     }
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     //Any unexpected errors
     catch (error) {
         console.error("Error validating token: " + error);
-        window.location.href = "index.html";
+        window.location.href = "index/html/index.html";
     }
 
     setupActivityListeners();
