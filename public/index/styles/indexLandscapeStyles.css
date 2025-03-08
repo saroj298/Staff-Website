@@ -12,15 +12,23 @@ html, body {
     justify-content: center;
     overflow: hidden;
 }
-.backgroundImage {
-    background: url("../../index/images/indexBackground.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
+.backgroundTransition {
     position: absolute;
-    top: 0px;
-    transform-origin: top center;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    z-index: -1;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    width: 100vw;
+    height: 100vh;
+}
+.backgroundImage {
+    position: absolute;
     z-index: -1;
     overflow: hidden;
+    width: 100vw;
+    height: 100vh;
 }
 .scaleContainer {
     width: calc(1920px*var(--scale));
