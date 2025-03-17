@@ -213,6 +213,70 @@ app.post("/login", async (req, res) => {
     timeLog("---Login request END---")
 });
 
+//Another temp function to be in database interactions js which will check the table containing staff account creation
+//tokens to check if the one provided is valid. This is done 2 ways tokens will have a 24hr lifetime so needs to check
+//not only that token is present in db but that it is still alive aswell. (would be nice if this function deleted out of 
+//lifetime tokens too)
+async function isTokenValid(token) {
+    //Temp return true
+    return true;
+}
+
+//Another temp function to be in database interactions js which will check the staff accounts table to see
+//if the email entered is already in use
+async function emailExists(email) {
+    //temp return false
+    return false;
+}
+
+//Another temp function to save the account to the database
+async function saveAccount(email, hashedPassword, accessLevel = "staff") {
+    //temp return
+    return;
+}
+
+app.post("/createAccount", async (req, res) => {
+    timeLog("---Dealing with account creation request---");
+    try {
+        const {encryptedTokenBase64, encryptedEmailBase64, encryptedPasswordBase64} = req.body;
+        timeLog("Decrypting details");
+        const token = await decryptStr(encryptedTokenBase64);
+        const email = await decryptStr(encryptedEmailBase64).toLowerCase;
+        const hashedPassword = await argon2.hash(await decryptStr(encryptedPasswordBase64), {
+            type: argon2.argon2id,
+            memoryCost: 2 ** 16, //64MB
+            timeCost: 4, //No. Iterations
+            parallelism: 2 //No. Threads
+        });
+        timeLog("Details decrypted");
+        timeLog("Check for valid token");
+        if (!isTokenValid(token)) {
+            timeLog("Token invalid");
+            res.status(401).json({success: false, message: "Token is invalid."});
+            timeLog("---Account creation request END---");
+            return;
+        }
+        timeLog("Token valid");
+        timeLog("Check email is new");
+        if (!emailExists(email)) {
+            timeLog("Email already exists");
+            res.status(409).json({success: false, message: "Email is already in use."});
+            timeLog("---Account creation request END---");
+            return;
+        }
+        timeLog("Email new");
+        timeLog("Saving account to db");
+        saveAccount(email, hashedPassword);
+        res.json({success: true, message: "Account creation successful."});
+    }
+    catch (error) {
+        timeLog("An unexpected error occured.");
+        console.error("Error: " + error.message);
+        res.status(500).json({success: false, message: "Server error during account creation."});
+    }
+    timeLog("---Account creation request END---");
+})
+
 //Function to check if user has a currently valid token and if they do refresh it
 app.post("/refresh-token", authenticateToken, async (req, res) => {
     try {

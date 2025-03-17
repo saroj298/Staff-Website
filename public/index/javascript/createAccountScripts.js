@@ -15,6 +15,7 @@ async function createAccount(event) {
     event.preventDefault();
     const token = document.getElementById("creationToken").value;
     const email = document.getElementById("email").value;
+    var errorDisplay = document.getElementById("errorDisplay");
 
     //Ensure no blank fields
     if (!token || !email || !document.getElementById("password") || !document.getElementById("confirmPassword")) {
@@ -25,12 +26,16 @@ async function createAccount(event) {
     //Ensure correct email format
     else if(!(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).test(email)) {
         errorDisplay.innerText = "Invalid email format. Please enter a valid email";
+        document.getElementById("password").value = "";
+        document.getElementById("confirmPassword").value = "";
         return;
     }
 
     //Ensure passwords match
     else if (!(document.getElementById("password").value === document.getElementById("confirmPassword").value)) {
         errorDisplay.innerText = "Passwords do not match";
+        document.getElementById("password").value = "";
+        document.getElementById("confirmPassword").value = "";
         return;
     }
 
@@ -80,24 +85,36 @@ async function createAccount(event) {
     //If any errors output and return
     if(errorCount > 0) {
         errorDisplay.innerText = errorMessage;
+        document.getElementById("password").value = "";
+        document.getElementById("confirmPassword").value = "";
         return;
     }
 
     //Pass create account request to server
-    const encryptedEmailBase64 = encryptString(email);
-    const encryptedPasswordBase64 = encryptString(document.getElementById("password").innerText);
-    const encryptedTokenBase64 = encryptString(token);
-    const response = await fetch("/createAccount", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            encryptedTokenBase64,
-            encryptedEmailBase64,
-            encryptedPasswordBase64
-        })
-    });
-
-    //Do stuff based on response when server side code is complete i.e say account created or failed or token invalid.
+    try {
+        const encryptedEmailBase64 = encryptString(email);
+        const encryptedPasswordBase64 = encryptString(document.getElementById("password").innerText);
+        const encryptedTokenBase64 = encryptString(token);
+        const response = await fetch("/createAccount", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                encryptedTokenBase64,
+                encryptedEmailBase64,
+                encryptedPasswordBase64
+            })
+        });
+        const data = await response.json();
+        errorDisplay.innerText = data.errorMessage || data.message;
+    }
+    catch (error) {
+        errorDisplay.innerText = error.message || "An unexpected error occured.";
+        console.error("Error during account creation: " + error.message);
+    }
+    finally {
+        document.getElementById("password").value = "";
+        document.getElementById("confirmPassword").value = "";
+    }
 }

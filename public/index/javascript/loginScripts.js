@@ -19,12 +19,14 @@ async function validateLogin(event){
     //Ensure no blank fields
     if (!email || !document.getElementById("password").value) {
         errorDisplay.innerText = "One or more fields have been left blank.";
+        document.getElementById("password").value = "";
         return;
     }
 
     //Ensure correct email formating
     else if(!(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).test(email)) {
         errorDisplay.innerText = "Invalid email format. Please enter a valid email";
+        document.getElementById("password").value = "";
         return;
     }
 
