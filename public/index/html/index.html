@@ -6,6 +6,7 @@
         <script src = "../../index/javascript/loginScripts.js"></script>
         <script src = "../../index/javascript/showPassword.js"></script>
         <script src = "../../index/javascript/scaleHandler.js"></script>
+        <script src = "../../index/javascript/swapForm.js"></script>
         <script src = "../../index/javascript/backgroundCycle.js" type = "module"></script>
         <link rel = "stylesheet" href = "../../index/styles/indexPortraitStyles.css" media = "(max-aspect-ratio: 0.999)">
         <link rel = "stylesheet" href = "../../index/styles/indexLandscapeStyles.css" media = "(min-aspect-ratio: 1)">
@@ -26,8 +27,9 @@
                     <section class = "pageTitle">
                         <h2>Staff Portal</h2>
                     </section>
-                    <section class = "loginBox">
+                    <section id = "loginBox" class = "loginBox">
                         <h2>Log In</h2>
+                        <h3>Don't have an account? Create one <a href = "#" onclick = "createAccountPage(); return false;">here</a></h3>
                         <form id = "loginForm" action autocomplete= "off">
                             <div class = "formGroup">
                                 <label for = "email">Email</label>
