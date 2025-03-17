@@ -7,6 +7,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
+const argon2 = require("argon2");
 
 //Import functions from generateKeys.js
 const {generateKeyPair, testKeys, generateJWTKey} = require("./generateKeys.js")
@@ -155,22 +156,47 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index/html/index.html"));
 });
 
-//Handle login
+//Function will be in different JS file for database interactions
+async function validateCredentialsStaff(email, password) {
+    //Search database for record with email if none exists return null here
+    if (!email) { //Example search database if email is not present in data base return null
+        return null;
+    }
+    //If a record for email does exist fetch password from record
+    //Ignore this im hashing the stored password example in the same way passwords would be stored in database
+    storedPassword = await argon2.hash("password123", {
+        type: argon2.argon2id,
+        memoryCost: 2 ** 16, //64MB
+        timeCost: 4, //No. Iterations
+        parallelism: 2 //No. Threads
+    });
+    //Check password against storedPassword
+    if (await argon2.verify(storedPassword, password)) {
+        //If password is correct
+        return "admin"; //return access level (fetch access level from data base "admin", "staff", "headstaff" etc)
+    }
+    //If password is false return null
+    return null;
+
+    /*
+    So TLDR: "SELECT * FROM staffTbl WHERE email == " + email;
+           : if returns null return null else continute in function
+           : "SELECT password FROM staffTbl WHERE email == " + email;
+           : use password to check against user input if valid return true
+           : return null 
+    */
+}
+
 app.post("/login", async (req, res) => {
     timeLog("---Dealing with login request---");
     try {
         const {encryptedEmailBase64, encryptedPasswordBase64} = req.body;
-        timeLog("Begining password decrypt");
-        const password = await decryptStr(encryptedPasswordBase64);
-        timeLog("Password decrypted");
         timeLog("Begining email decrypt");
         const email = await decryptStr(encryptedEmailBase64);
         timeLog("Email decrypted");
-        //Dummy values replace with database lookup.
-        //Search database for email and find relevent password field and test if password matchs if so return valid entry
-        const validEmail = "email@gmail.com";
-        const validPassword = "password123";
-        if (email === validEmail && password === validPassword) {
+        timeLog("Validating credentials");
+        const accessLevel = await validateCredentialsStaff(email.toLowerCase(), await decryptStr(encryptedPasswordBase64));
+        if (accessLevel) {
             timeLog("Valid credentals presented login success");
             await createToken(email, res);
             res.json({success: true, message: "Login successful!"});
