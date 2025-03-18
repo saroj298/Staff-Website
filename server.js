@@ -314,6 +314,51 @@ app.post("/refresh-token", authenticateToken, async (req, res) => {
     }
 })
 
+//Another temp function that will be in db interactions
+async function getEvents() {
+    const events = [
+        {
+            eventName: "Computer Demo",
+            detailsShort: "A demonstration of how the uni computers work",
+            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
+            staffAssigned: ["Computer science teacher 1"],
+            numberStudentsSignedUp: "35",
+            totalSpaces: "56",
+            releventSubjects: "CS, ART, MATH, HISTORY"
+        },
+        {
+            eventName: "Computer Demo",
+            detailsShort: "A demonstration of how the uni computers work",
+            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
+            staffAssigned: ["Computer science teacher 1"],
+            numberStudentsSignedUp: "35",
+            totalSpaces: "56",
+            releventSubjects: "CS, ART, MATH, HISTORY"
+        },
+        {
+            eventName: "Computer Demo",
+            detailsShort: "A demonstration of how the uni computers work",
+            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
+            staffAssigned: ["Computer science teacher 1"],
+            numberStudentsSignedUp: "35",
+            totalSpaces: "56",
+            releventSubjects: "CS, ART, MATH, HISTORY"
+        }
+    ];
+    return events;
+}
+
+app.get("/events", async (req, res) => {
+    try {
+        const events = await getEvents();
+        res.json(events);
+    }
+    catch (error) {
+        console.error("Error fetching events: " + error);
+        res.status(500).json({success: false, message: "Server error retrieving events."});
+    }
+});
+
 //Start the server
 app.listen(PORT, async () => {
     //TODO remove key generation from server start and add to each session at some point.

@@ -6,6 +6,7 @@
         <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
         <script src = "../../adminPanel/javascript/adminPanelScripts.js"></script>
         <script src = "../../adminPanel/javascript/accountCreationTokens.js"></script>
+        <script src = "../../adminPanel/javascript/populateEvents.js"></script>
         <link rel = "stylesheet" href = "../../adminPanel/styles/adminPanelStyles.css">
     </head>
     <main>
@@ -16,8 +17,6 @@
             <button>Sign Out</button>
             <button onclick ="generateAccountCreationToken();">Generate Account Creation Token</button>
         </header>
-        <section class = "events">
-            <p id = "logoutTimer">temp</p>
-        </section>
+        <section id = "events" class = "events"></section>
     </main>
 </html>
