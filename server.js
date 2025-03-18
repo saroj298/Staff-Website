@@ -135,7 +135,7 @@ async function createToken(email, res) {
 
 //Serve admin-panel to only authorised users
 app.get("/admin-panel.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "admin-panel.html"));
+    res.sendFile(path.join(__dirname, "public", "adminPanel/html/admin-panel.html"));
 })
 
 //Request to check if token is valid
@@ -211,6 +211,31 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ success: false, message: "An unexpected server error occurred." });
     }
     timeLog("---Login request END---")
+});
+
+async function generateAccountCreationToken() {
+    var token;
+    do {
+        token = crypto.randomBytes(8).toString("hex").match(/.{1,4}/g).join("-").toUpperCase();
+    } while (!await isTokenValid(token)); //This line for now is referancing a funciton always returning true until database interactions is created
+                                          //this line is !await isTokenValid(token) remove the ! when db functions added.
+    return token;
+}
+
+//Another temp function to be in db interactions to store a token
+function storeToken(token, createdAt){
+    return;
+}
+
+app.get("/generateAccountCreationToken", async (req, res) => {
+    timeLog("---Generating Account Creation Token---");
+    const token = await generateAccountCreationToken();
+    timeLog("Token Generated")
+    const createdAt = new Date().toISOString();
+    storeToken(token, createdAt);
+    timeLog("Token Stored");
+    res.json({token});
+    timeLog("---Generate Account Creation Token END");
 });
 
 //Another temp function to be in database interactions js which will check the table containing staff account creation

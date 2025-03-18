@@ -47,7 +47,7 @@ async function validateLogin(event){
             }
             const data = await response.json();
             if (data.success) {
-                window.location.href = "admin-panel.html";
+                window.location.href = "../../adminPanel/html/admin-panel.html";
             }
             else {
                 throw new Error(data.message);

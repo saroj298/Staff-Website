@@ -19,13 +19,13 @@ async function refreshToken() {
             credentials: "include"
         });
         if (!response.ok) {
-            window.location.href = "index/html/index.html";
+            window.location.href = "../../index/html/index.html";
             return;
         }
     }
     catch (error) {
         console.error("Error refreshing token: " + error);
-        window.location.href = "index/html/index.html";
+        window.location.href = "../../index/html/index.html";
     }
 }
 
@@ -35,12 +35,19 @@ async function promptUserForRefreshWithCountdown(){
     return new Promise((resolve) => {
 
         //html items for popup
-        const modal = document.getElementById("refreshModal");
+        const popup = document.getElementById("signoutCountdownPopup");
+        popup.innerHTML = `
+            <div class = "popupContent">
+                <p>Your session is about to expire. Are you still there?</p>
+                <p id = "countdownTimer"></p>
+                <button id = "stayLoggedInBtn">Yes, keep me logged in</button>
+            </div>
+        `;
         const countdownElem = document.getElementById("countdownTimer");
         const stayBtn = document.getElementById("stayLoggedInBtn");
 
         //Show popup
-        modal.style.display = "flex"; 
+        popup.style.display = "flex"; 
 
         let remaining = Math.floor(timeout/1000);
         countdownElem.innerText = remaining + "s";
@@ -51,7 +58,8 @@ async function promptUserForRefreshWithCountdown(){
             countdownElem.innerText = remaining + "s";
             if (remaining <= 0) {
                 clearInterval(intervalId);
-                modal.style.display = "none";
+                popup.style.display = "none";
+                popup.innerHTML = ``;
                 resolve(false);
             }
         }, 1000);
@@ -59,7 +67,8 @@ async function promptUserForRefreshWithCountdown(){
         //If button to stay is clicked stop countdown and return that the user is still present
         stayBtn.onclick = () => {
             clearInterval(intervalId);
-            modal.style.display = "none";
+            popup.style.display = "none";
+            popup.innerHTML = ``;
             resolve(true);
         };
     });
@@ -87,7 +96,7 @@ function startTokenRefreshChecker() {
                 return;
             }
             else {
-                window.location.href = "index/html/index.html";
+                window.location.href = "../../index/html/index.html";
             }
         }
     }, checkInterval);
@@ -104,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //Check for invalid/expired token
         if(!response.ok) {
-            window.location.href = "index/html/index.html";
+            window.location.href = "../../index/html/index.html";
             return;
         }
     }
@@ -112,7 +121,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     //Any unexpected errors
     catch (error) {
         console.error("Error validating token: " + error);
-        window.location.href = "index/html/index.html";
+        window.location.href = "../../index/html/index.html";
     }
 
     setupActivityListeners();
