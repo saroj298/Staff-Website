@@ -8,7 +8,11 @@ async function encryptString(str){
 }
 
 //Function to fetch and return the public key from server.
-async function fetchPublicKey(){return forge.pki.publicKeyFromPem(await (await fetch("/publicKey")).text());}
+async function fetchPublicKey(){
+    const response = await fetch("/publicKey");
+    const publicKeyPem = await response.text();
+    return forge.pki.publicKeyFromPem(publicKeyPem);
+}
 
 //Function to validate login 
 async function validateLogin(event){

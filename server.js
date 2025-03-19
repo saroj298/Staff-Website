@@ -8,9 +8,10 @@ const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
 const argon2 = require("argon2");
+const session = require("express-session");
 
 //Import functions from generateKeys.js
-const {generateKeyPair, testKeys, generateJWTKey} = require("./generateKeys.js")
+const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
 const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff} = require("./databaseInteractions.js");
@@ -23,6 +24,22 @@ app.use(express.json());
 
 //Add middleware to handle cookies
 app.use(cookieParser());
+
+//Add middleware to handle sessions
+app.use(session({
+    secret: "cb7546c9ec9b9c43eb762bc81753dc6bc6f5b376b2ab180ce8373053ebf17714dd7d89da9659c1a0d6a95efd787d165e7d03e2f3d4c117ccb3aecb772f4d14bd",
+    resave: false,
+    saveUninitialized: true,
+    cokkie: {secure: false} //set to true for HTTPS
+}));
+
+//Add middleware to generate session keys
+app.use(async (req, res, next) => {
+    if (!req.session.publicKey || !req.session.privateKey || !req.session.JWTkey) {
+        await generateSessionKeys(req);
+    }
+    next();
+});
 
 //Set port
 const PORT = 3000;
@@ -50,8 +67,8 @@ function timeLog (str) {
 }
 
 //Function to encrypt string using RSAES-OAEP/SHA-256
-async function encryptStr(str) {
-    const publicKey = await fetchPublicKey();
+async function encryptStr(str, req) {
+    const publicKey = fetchPublicKey(req);
     const encryptedStr = crypto.publicEncrypt({
         key: publicKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
@@ -61,12 +78,12 @@ async function encryptStr(str) {
 }
 
 //Function to fetch public
-async function fetchPublicKey(){return await fsPromise.readFile("public/public.pem", "utf8");}
+function fetchPublicKey(req){return req.session.publicKey;}
 
 //Function to decrypt string using RSAES-OAEP/SHA-256
-async function decryptStr(encryptedStrBase64) {
+async function decryptStr(encryptedStrBase64, req) {
     timeLog("--Starting Decryption--");
-    const privateKey = await fetchPrivateKey();
+    const privateKey = fetchPrivateKey(req);
     timeLog("Private key fetched");
     timeLog("EncrpytedStrBase64: " + encryptedStrBase64);
     const encryptedStr = Buffer.from(encryptedStrBase64, "base64");
@@ -82,7 +99,7 @@ async function decryptStr(encryptedStrBase64) {
 }
 
 //Function to fetch private key
-async function fetchPrivateKey(){return await fsPromise.readFile("private.pem", "utf8");}
+function fetchPrivateKey(req){return req.session.privateKey;}
 
 //Function to check if user is authorised for admin-panel.html
 async function authenticateToken(req, res, next) {
@@ -95,8 +112,8 @@ async function authenticateToken(req, res, next) {
         return res.status(401).json({success: false, message: "Access denied no token provided"});
     }
     try {
-        const token = await decryptStr(encryptedToken);
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        const token = await decryptStr(encryptedToken, req);
+        jwt.verify(token, req.session.JWTkey, (err, user) => {
             if (err) {
                 timeLog("Invalid or expired token found");
                 timeLog("--Authenticate token END Fail--");
@@ -115,16 +132,15 @@ async function authenticateToken(req, res, next) {
 }
 
 //Function to create a token and add it to cookies
-async function createToken(email, res) {
+async function createToken(email, req, res) {
     timeLog("--Create Token Start--");
-    timeLog("env file exists contianing JWT key: " + !!process.env.JWT_SECRET);
     const token = jwt.sign(
         {email},
-        process.env.JWT_SECRET,
+        req.session.JWTkey,
         {expiresIn: "10m"}
     );
     timeLog("User token created");
-    const encryptedToken = await encryptStr(token);
+    const encryptedToken = await encryptStr(token, req);
     timeLog("Token encrypted: " + encryptedToken);
     res.cookie("token", encryptedToken, {
         httpOnly: true,
@@ -148,8 +164,13 @@ app.get("/validate-token", authenticateToken, (req, res) => {
 
 //Serve public key to client
 app.get("/publicKey", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "public.pem"));
-})
+    if (!req.session.publicKey) {
+        res.status(500).send("Public key not available.");
+    }
+    else {
+        res.send(req.session.publicKey);
+    }
+});
 
 //Serve files
 app.use(express.static('public'));
@@ -165,13 +186,13 @@ app.post("/login", async (req, res) => {
     try {
         const {encryptedEmailBase64, encryptedPasswordBase64} = req.body;
         timeLog("Begining email decrypt");
-        const email = await decryptStr(encryptedEmailBase64);
+        const email = await decryptStr(encryptedEmailBase64, req);
         timeLog("Email decrypted");
         timeLog("Validating credentials");
-        const accessLevel = await validateCredentialsStaff(email.toLowerCase(), await decryptStr(encryptedPasswordBase64));
+        const accessLevel = await validateCredentialsStaff(email.toLowerCase(), await decryptStr(encryptedPasswordBase64, req));
         if (accessLevel) {
             timeLog("Valid credentals presented login success");
-            await createToken(email, res);
+            await createToken(email, req, res);
             res.json({success: true, message: "Login successful!"});
         }
         else {
@@ -211,9 +232,9 @@ app.post("/createAccount", async (req, res) => {
     try {
         const {encryptedTokenBase64, encryptedEmailBase64, encryptedPasswordBase64} = req.body;
         timeLog("Decrypting details");
-        const token = await decryptStr(encryptedTokenBase64);
-        const email = await decryptStr(encryptedEmailBase64).toLowerCase;
-        const hashedPassword = await argon2.hash(await decryptStr(encryptedPasswordBase64), {
+        const token = await decryptStr(encryptedTokenBase64, req);
+        const email = await decryptStr(encryptedEmailBase64, req).toLowerCase();
+        const hashedPassword = await argon2.hash(await decryptStr(encryptedPasswordBase64, req), {
             type: argon2.argon2id,
             memoryCost: 2 ** 16, //64MB
             timeCost: 4, //No. Iterations
@@ -251,7 +272,7 @@ app.post("/createAccount", async (req, res) => {
 //Function to check if user has a currently valid token and if they do refresh it
 app.post("/refresh-token", authenticateToken, async (req, res) => {
     try {
-        await createToken(req.user.email, res);
+        await createToken(req.user.email, req, res);
         return res.json({success: true, message: "Token refreshed successfully"});
     }
     catch (error){
@@ -273,23 +294,5 @@ app.get("/events", async (req, res) => {
 
 //Start the server
 app.listen(PORT, async () => {
-    //TODO remove key generation from server start and add to each session at some point.
-    
-    timeLog("---Begining key generation---");
-    generateKeyPair();
-    while (!testKeys()) {
-        timeLog("Public & Private key generation failed trying again.");
-        generateKeyPair();
-    }
-    if (!fs.existsSync(".env")) {
-        await generateJWTKey();
-    }
-    else {
-        timeLog(".env file already exists. Skipping key generation.");
-    }
-    dotenv.config()
-    timeLog ("Key generation success.");
-    timeLog("---Key generation END---");
-
     timeLog("Server is running on: http://localhost:" + PORT);
 });
