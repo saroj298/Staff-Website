@@ -19,13 +19,13 @@ async function refreshToken() {
             credentials: "include"
         });
         if (!response.ok) {
-            window.location.href = "../../index/html/index.html";
+            window.location.href = "/";
             return;
         }
     }
     catch (error) {
         console.error("Error refreshing token: " + error);
-        window.location.href = "../../index/html/index.html";
+        window.location.href = "/";
     }
 }
 
@@ -96,7 +96,7 @@ function startTokenRefreshChecker() {
                 return;
             }
             else {
-                window.location.href = "../../index/html/index.html";
+                window.location.href = "/";
             }
         }
     }, checkInterval);
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //Check for invalid/expired token
         if(!response.ok) {
-            window.location.href = "../../index/html/index.html";
+            window.location.href = "/";
             return;
         }
     }
@@ -121,9 +121,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     //Any unexpected errors
     catch (error) {
         console.error("Error validating token: " + error);
-        window.location.href = "../../index/html/index.html";
+        window.location.href = "/";
     }
 
     setupActivityListeners();
     startTokenRefreshChecker();
-})
+});
+
+function signOut() {
+    fetch("/signOut", {
+        method: "GET",
+        credentials: "include"
+    }).then(response => {
+        window.location.href = "/";
+    }).catch(error => {
+        console.error("Error signing out: " + error);
+        window.location.href = "/";
+    });
+}

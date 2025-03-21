@@ -30,7 +30,7 @@ app.use(session({
     secret: "cb7546c9ec9b9c43eb762bc81753dc6bc6f5b376b2ab180ce8373053ebf17714dd7d89da9659c1a0d6a95efd787d165e7d03e2f3d4c117ccb3aecb772f4d14bd",
     resave: false,
     saveUninitialized: true,
-    cokkie: {secure: false} //set to true for HTTPS
+    cookie: {secure: false} //set to true for HTTPS
 }));
 
 //Add middleware to generate session keys
@@ -109,7 +109,7 @@ async function authenticateToken(req, res, next) {
     if (!encryptedToken) {
         timeLog("No token found");
         timeLog("--Authenticate token END Fail--");
-        return res.status(401).json({success: false, message: "Access denied no token provided"});
+        return res.status(404).send("Not Found");
     }
     try {
         const token = await decryptStr(encryptedToken, req);
@@ -117,7 +117,7 @@ async function authenticateToken(req, res, next) {
             if (err) {
                 timeLog("Invalid or expired token found");
                 timeLog("--Authenticate token END Fail--");
-                return res.status(403).json({success: false, message: "Access denied invalid or expired token."});
+                return res.status(404).send("Not Found");
             }
             timeLog("Valid token found");
             req.user = user;
@@ -127,7 +127,7 @@ async function authenticateToken(req, res, next) {
     }
     catch (error) {
         console.error("Token decryption error: " + error);
-        return res.status(403).json({success: false, message: "Invalid or expired token."});
+        return res.status(404).send("Not Found");
     }
 }
 
@@ -152,11 +152,6 @@ async function createToken(email, req, res) {
     timeLog("--Create Token END--");
 }
 
-//Serve admin-panel to only authorised users
-app.get("/admin-panel.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "adminPanel/html/admin-panel.html"));
-})
-
 //Request to check if token is valid
 app.get("/validate-token", authenticateToken, (req, res) => {
     res.json({success: true, message: "Token is valid"});
@@ -172,8 +167,11 @@ app.get("/publicKey", (req, res) => {
     }
 });
 
-//Serve files
-app.use(express.static('public'));
+//Serve protected files when JWT present
+app.use("/protected", authenticateToken, express.static(path.join(__dirname, "protected")));
+
+//Serve public files
+app.use(express.static(path.join(__dirname, "public")));
 
 //Serve index at page visit
 app.get("/", (req, res) => {
@@ -283,14 +281,30 @@ app.post("/refresh-token", authenticateToken, async (req, res) => {
 })
 
 app.get("/events", async (req, res) => {
+    timeLog("Fetching events");
     try {
         const events = await getEvents();
         res.json(events);
+        timeLog("Events fetched");
     }
     catch (error) {
         console.error("Error fetching events: " + error);
         res.status(500).json({success: false, message: "Server error retrieving events."});
+        timeLog("Event fetch failed: " + error);
     }
+});
+
+app.get("/signOut", (req, res) => {
+    timeLog("Logout request recived");
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false, //change to true for HTTPS
+        sameSite: "strict",
+    });
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
+    timeLog("Logout successfull");
 });
 
 //Start the server
