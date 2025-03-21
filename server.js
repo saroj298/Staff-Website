@@ -14,7 +14,7 @@ const session = require("express-session");
 const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
-const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff} = require("./databaseInteractions.js");
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -259,6 +259,7 @@ app.post("/createAccount", async (req, res) => {
         timeLog("Email new");
         timeLog("Saving account to db");
         saveAccount(email, hashedPassword);
+        removeToken(token);
         res.json({success: true, message: "Account creation successful."});
     }
     catch (error) {

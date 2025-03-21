@@ -34,6 +34,7 @@ async function validateCredentialsStaff(email, password) {
 
 //Another temp function to be in db interactions to store a token
 function storeToken(token, createdAt){
+    removeOutOfDateTokens();
     return;
 }
 
@@ -43,6 +44,7 @@ function storeToken(token, createdAt){
 //lifetime tokens too)
 async function isTokenValid(token) {
     //Temp return true
+    removeOutOfDateTokens();
     return true;
 }
 
@@ -96,6 +98,16 @@ async function getEvents() {
     return events;
 }
 
+//Temp function which will remove the token from the db
+function removeToken(token) {
+    return;
+}
+
+//Temp function will remove all out of date tokens from the db
+function removeOutOfDateTokens(token) {
+    return;
+}
+
 // Export the functions so they can be imported in your server.js.
 module.exports = {
     getEvents,
@@ -103,5 +115,6 @@ module.exports = {
     isTokenValid,
     emailExists,
     storeToken,
-    validateCredentialsStaff
+    validateCredentialsStaff,
+    removeToken
 };
