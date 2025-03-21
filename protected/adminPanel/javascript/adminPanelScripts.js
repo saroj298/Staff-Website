@@ -74,11 +74,10 @@ async function promptUserForRefreshWithCountdown(){
     });
 }
 
-//Check token every 9 minutes and attempt to refresh token
+//Check token every 4 minutes and attempt to refresh token
 function startTokenRefreshChecker() {
-    const checkInterval = 540000 //9mins in milliseconds
+    const checkInterval = 240000 //4mins in milliseconds
     setInterval(async () => {
-
         //Refresh token automatically if user has activity in last 9min
         if(userActive) {
             await refreshToken();
@@ -96,7 +95,7 @@ function startTokenRefreshChecker() {
                 return;
             }
             else {
-                window.location.href = "/";
+                signOut();
             }
         }
     }, checkInterval);

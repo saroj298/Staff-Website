@@ -108,6 +108,19 @@ function removeOutOfDateTokens(token) {
     return;
 }
 
+//More temp functions to do with events writing and updating
+function addEvent(event) {
+    return;
+}
+
+function updateEvent(event) {
+    return;
+}
+
+function removeEvent(event) {
+    return;
+}
+
 // Export the functions so they can be imported in your server.js.
 module.exports = {
     getEvents,

@@ -137,7 +137,7 @@ async function createToken(email, req, res) {
     const token = jwt.sign(
         {email},
         req.session.JWTkey,
-        {expiresIn: "10m"}
+        {expiresIn: "5m"}
     );
     timeLog("User token created");
     const encryptedToken = await encryptStr(token, req);
@@ -146,7 +146,7 @@ async function createToken(email, req, res) {
         httpOnly: true,
         secure: false, //change to true for https
         sameSite: "Strict",
-        maxAge: 600000 //10m in millisecconds
+        maxAge: 300000 //5m in millisecconds
     });
     timeLog("Token added to cookie");
     timeLog("--Create Token END--");
