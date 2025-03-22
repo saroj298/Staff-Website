@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Admin Panel</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+        <script src = "../../events/javascript/generateHtml.js"></script>
+        <script src = "../../events/javascript/event.js"></script>
+        <script src = "../../javascript/tokenVerificationHandler.js"></script>
+        <link rel = "stylesheet" href = "../../events/styles/eventStyles.css">
+        <link rel = "stylesheet" href = "../../styles/popupStyles.css">
+    </head>
+    <main>
+        <div id = "signoutCountdownPopup" class = "popup"></div>
+        <header class = "topdisplay">
+            <h1>Midland Developers</h1>
+            <button onclick = "returnToAdminPanel()">Return to admin panel</button>
+        </header>
+        <section id = "switchButtons"></section>
+        <section id = "event" class = "event"></section>
+    </main>
+</html>

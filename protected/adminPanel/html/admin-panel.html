@@ -7,7 +7,9 @@
         <script src = "../../adminPanel/javascript/adminPanelScripts.js"></script>
         <script src = "../../adminPanel/javascript/accountCreationTokens.js"></script>
         <script src = "../../adminPanel/javascript/populateEvents.js"></script>
+        <script src = "../../javascript/tokenVerificationHandler.js"></script>
         <link rel = "stylesheet" href = "../../adminPanel/styles/adminPanelStyles.css">
+        <link rel = "stylesheet" href = "../../styles/popupStyles.css">
     </head>
     <main>
         <div id = "signoutCountdownPopup" class = "popup"></div>
@@ -17,6 +19,7 @@
             <button onclick = "signOut()">Sign Out</button>
             <button onclick ="generateAccountCreationToken();">Generate Account Creation Token</button>
         </header>
+        <button onclick = "addEvent()">Add Event</button>
         <section id = "events" class = "events"></section>
     </main>
 </html>

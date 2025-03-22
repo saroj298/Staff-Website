@@ -14,7 +14,7 @@ const session = require("express-session");
 const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
-const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken} = require("./databaseInteractions.js");
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken, getEvent} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -189,6 +189,7 @@ app.post("/login", async (req, res) => {
         timeLog("Validating credentials");
         const accessLevel = await validateCredentialsStaff(email.toLowerCase(), await decryptStr(encryptedPasswordBase64, req));
         if (accessLevel) {
+            req.session.accessLevel = accessLevel;
             timeLog("Valid credentals presented login success");
             await createToken(email, req, res);
             res.json({success: true, message: "Login successful!"});
@@ -305,6 +306,18 @@ app.get("/signOut", (req, res) => {
         res.redirect("/");
     });
     timeLog("Logout successfull");
+});
+
+app.get("/getEvent", authenticateToken, async(req, res) => {
+    const eventID = req.query.eventID;
+    if(!eventID) {
+        return res.status(400).json({success: false, message: "No eventID provided"});
+    }
+    const event = await getEvent(eventID);
+    if (event == null) {
+        return res.status(400).json({success: false, message: "No data with eventID in database."});
+    }
+    res.json(event);
 });
 
 //Start the server

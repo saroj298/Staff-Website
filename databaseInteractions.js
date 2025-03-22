@@ -72,7 +72,10 @@ async function getEvents() {
             staffAssigned: ["Computer science teacher 1"],
             numberStudentsSignedUp: 35,
             totalSpaces: 56,
-            releventSubjects: "CS, ART, MATH, HISTORY"
+            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
+            startTime: new Date("2025-03-21T11:00:00").getTime(),
+            endTime: new Date("2025-03-21T11:00:00").getTime(),
+            location: "Room 205, Tom Scott Building"
         },
         {
             eventID: 1,
@@ -82,7 +85,10 @@ async function getEvents() {
             staffAssigned: ["Computer science teacher 1"],
             numberStudentsSignedUp: 35,
             totalSpaces: 56,
-            releventSubjects: "CS, ART, MATH, HISTORY"
+            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
+            startTime: new Date("2025-03-21T11:00:00").getTime(),
+            endTime: new Date("2025-03-21T11:00:00").getTime(),
+            location: "Room 205, Tom Scott Building"
         },
         {
             eventID: 2,
@@ -92,10 +98,20 @@ async function getEvents() {
             staffAssigned: ["Computer science teacher 1"],
             numberStudentsSignedUp: 35,
             totalSpaces: 56,
-            releventSubjects: "CS, ART, MATH, HISTORY"
+            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
+            startTime: new Date("2025-03-21T11:00:00").getTime(),
+            endTime: new Date("2025-03-21T11:00:00").getTime(),
+            location: "Room 205, Tom Scott Building"
         }
     ];
     return events;
+}
+
+//Temp function which will get a event given an event ID
+async function getEvent(eventID) {
+    //temp method
+    const events = await getEvents();
+    return events.find(e => e.eventID == eventID) || null;
 }
 
 //Temp function which will remove the token from the db
@@ -129,5 +145,6 @@ module.exports = {
     emailExists,
     storeToken,
     validateCredentialsStaff,
-    removeToken
+    removeToken,
+    getEvent
 };
