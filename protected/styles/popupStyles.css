@@ -1,7 +1,12 @@
-.modal {
+#signoutCountdownPopup {
+    z-index: 9999; /*Ensure is presented on top*/
+}
+#createAccountTokenPopup {
+    z-index: 9998; /*Ensure on top except sign out countdown*/
+}
+.popup {
     display: none; /*Hide by default*/
     position: fixed;
-    z-index: 9999; /*Ensure is presented on top*/
     left: 0;
     top: 0;
     width: 100%;
@@ -11,7 +16,7 @@
     align-items: center;
 }
 
-.modal-content {
+.popupContent {
     background-color: #fff;
     padding: 20px;
     border-radius: 5px;

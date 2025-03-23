@@ -16,6 +16,7 @@ html, body {
     position: absolute;
     opacity: 0;
     transition: opacity 1.5s ease;
+    -webkit-transition: opacity 1.5s ease;
     z-index: -1;
     background-size: cover;
     background-position: center center;
@@ -84,6 +85,11 @@ html, body {
     font-size: calc(35px*var(--scale));
     color: white;
     font-weight: bold;
+}
+.loginBox h3 {
+    text-align: center;
+    font-size: calc(25px*var(--scale));
+    color: white;
 }
 .formGroup {
     margin-bottom: calc(30px*var(--scale));

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Admin Panel</title>
+        <meta charset="UTF-8">
+        <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
+        <script src = "../../adminPanel/javascript/adminPanelScripts.js"></script>
+        <script src = "../../adminPanel/javascript/accountCreationTokens.js"></script>
+        <script src = "../../adminPanel/javascript/populateEvents.js"></script>
+        <script src = "../../javascript/tokenVerificationHandler.js"></script>
+        <script src = "/javascript/backgroundCycle.js" type = "module"></script>
+        <script src = "/javascript/scaleHandler.js"></script>
+        <link rel = "stylesheet" href = "../../adminPanel/styles/adminPanelStyles.css">
+        <link rel = "stylesheet" href = "../../styles/popupStyles.css">
+    </head>
+    <main>
+        <div id = "signoutCountdownPopup" class = "popup"></div>
+        <div id = "createAccountTokenPopup" class = "popup"></div>
+        <header class = "topdisplay">
+            <button onclick = "signOut()">Sign Out</button>
+            <h1>Midland Developers</h1>
+            <button onclick ="generateAccountCreationToken();">Generate Account Creation Token</button>
+        </header>
+        <div id = "backgroundImage" class = "backgroundImage">
+            <div class = "backgroundTransition" style = "transition: opacity 0s ease; background-image: url('/images/indexBackground1.jpg'); opacity: 1;"></div>
+        </div>
+        <button onclick = "addEvent()">Add Event</button>
+        <section id = "events" class = "events"></section>
+    </main>
+</html>

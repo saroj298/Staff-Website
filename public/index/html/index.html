@@ -4,13 +4,15 @@
         <title>Staff Portal</title>
         <script src="https://cdn.jsdelivr.net/npm/node-forge@1.3.1/dist/forge.min.js"></script>
         <script src = "../../index/javascript/loginScripts.js"></script>
+        <script src = "../../index/javascript/createAccountScripts.js"></script>
         <script src = "../../index/javascript/showPassword.js"></script>
-        <script src = "../../index/javascript/scaleHandler.js"></script>
-        <script src = "../../index/javascript/backgroundCycle.js" type = "module"></script>
+        <script src = "../../javascript/scaleHandler.js"></script>
+        <script src = "../../index/javascript/swapForm.js"></script>
+        <script src = "../../javascript/backgroundCycle.js" type = "module"></script>
         <link rel = "stylesheet" href = "../../index/styles/indexPortraitStyles.css" media = "(max-aspect-ratio: 0.999)">
         <link rel = "stylesheet" href = "../../index/styles/indexLandscapeStyles.css" media = "(min-aspect-ratio: 1)">
         <meta charset="UTF-8">
-        <meta name="viewport" content = "width=device-width, initial-scale=1.0">
+        <meta name="viewport" content = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     </head>
     <body>
         <header id = "topbar" class = "topbar">
@@ -19,15 +21,16 @@
         </header>
         <div class = "scaleWrapper">
             <div id = "backgroundImage" class = "backgroundImage">
-                <div class = "backgroundTransition" style = "transition: opacity 0s ease; background-image: url('../../index/images/indexBackground1.jpg'); opacity: 1;"></div>
+                <div class = "backgroundTransition" style = "transition: opacity 0s ease; background-image: url('/images/indexBackground1.jpg'); opacity: 1;"></div>
             </div>
             <div id = "scaleContainer" class = "scaleContainer">
                 <main class = "content">
                     <section class = "pageTitle">
                         <h2>Staff Portal</h2>
                     </section>
-                    <section class = "loginBox">
+                    <section id = "loginBox" class = "loginBox">
                         <h2>Log In</h2>
+                        <h3>Don't have an account? Create one <a href = "#" onclick = "createAccountPage(); return false;">here</a></h3>
                         <form id = "loginForm" action autocomplete= "off">
                             <div class = "formGroup">
                                 <label for = "email">Email</label>

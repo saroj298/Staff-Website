@@ -5,5 +5,10 @@ function scaleContainer(){
         document.documentElement.style.setProperty("--scale", scaleFactor);
     }
 }
-document.addEventListener("DOMContentLoaded", scaleContainer);
+if (document.readyState !== "loading") {
+    scaleContainer();
+}
+else {
+    document.addEventListener("DOMContentLoaded", scaleContainer);
+}
 window.addEventListener("resize", scaleContainer);

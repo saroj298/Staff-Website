@@ -1,8 +1,6 @@
 //Node module imports
 const crypto = require("crypto");
-const fs = require('fs');
 const forge = require("node-forge");
-const fsPromise = require("fs/promises");
 
 //Function to print log by appending time and message
 function timeLog (str) {
@@ -27,7 +25,7 @@ function timeLog (str) {
 }
 
 //Generate public and private keys
-function generateKeyPair() {
+function generateKeyPair(req) {
     timeLog("--Generate public & private key pair--");
     const {publicKey, privateKey} = crypto.generateKeyPairSync("rsa", {
         modulusLength: 2048,
@@ -41,38 +39,42 @@ function generateKeyPair() {
         },
     });
     timeLog("Keys generated");
-    fs.writeFileSync("public/public.pem", publicKey);
-    fs.writeFileSync("private.pem", privateKey);
+    req.session.publicKey = publicKey;
+    req.session.privateKey = privateKey;
     timeLog("Keys saved");
     timeLog("--Generate public & private key pair END--");
 }
 
 //Test keys to ensure they are compatable
-function testKeys() {
-    const publicKeyPem = fs.readFileSync("public/public.pem", "utf8");
-    const privateKeyPem = fs.readFileSync("private.pem", "utf8");
-    const publicKeyForge = forge.pki.publicKeyFromPem(publicKeyPem)
-    const privateKeyForge = forge.pki.privateKeyFromPem(privateKeyPem)
+function testKeys(req) {
+    timeLog("--Test Keys--");
+    if (!req.session.publicKey || !req.session.privateKey) {
+        return false;
+    }
+    const publicKeyForge = forge.pki.publicKeyFromPem(req.session.publicKey)
+    const privateKeyForge = forge.pki.privateKeyFromPem(req.session.privateKey)
     const publicModulus = publicKeyForge.n.toString(16);
     const privateModulus = privateKeyForge.n.toString(16);
-    if (publicModulus === privateModulus) return true;
-    else return false;
+    timeLog("Keys match: " + (publicModulus === privateModulus));
+    timeLog("--Test Keys END--");
+    return publicModulus === privateModulus;
 }
 
 //Generate a key for the json web tokens
-async function generateJWTKey() {
+function generateJWTKey(req) {
     timeLog("--Generate JWT key--")
     const randomKey = crypto.randomBytes(64).toString("hex");
     timeLog("Random JWT key generated")
-    const envContent = "JWT_SECRET="+randomKey+"\n";
-    try {
-        await fsPromise.writeFile(".env", envContent, "utf8");
-        timeLog("Random JWT key saved")
-    }
-    catch (error) {
-        console.error("Failed to write to .env file: " + error.message);
-    }
+    req.session.JWTkey = randomKey;
+    timeLog("Random JWT key saved")
     timeLog("--Generate JWT key END--")
 }
+
+async function generateSessionKeys(req) {
+    do {
+        generateKeyPair(req);
+    } while (!testKeys(req));
+    generateJWTKey(req);
+}
 //Export functions
-module.exports = {generateKeyPair, testKeys, generateJWTKey};
+module.exports = {generateSessionKeys};

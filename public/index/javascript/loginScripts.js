@@ -8,7 +8,11 @@ async function encryptString(str){
 }
 
 //Function to fetch and return the public key from server.
-async function fetchPublicKey(){return forge.pki.publicKeyFromPem(await (await fetch("/publicKey")).text());}
+async function fetchPublicKey(){
+    const response = await fetch("/publicKey");
+    const publicKeyPem = await response.text();
+    return forge.pki.publicKeyFromPem(publicKeyPem);
+}
 
 //Function to validate login 
 async function validateLogin(event){
@@ -19,12 +23,14 @@ async function validateLogin(event){
     //Ensure no blank fields
     if (!email || !document.getElementById("password").value) {
         errorDisplay.innerText = "One or more fields have been left blank.";
+        document.getElementById("password").value = "";
         return;
     }
 
     //Ensure correct email formating
     else if(!(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/).test(email)) {
         errorDisplay.innerText = "Invalid email format. Please enter a valid email";
+        document.getElementById("password").value = "";
         return;
     }
 
@@ -45,7 +51,7 @@ async function validateLogin(event){
             }
             const data = await response.json();
             if (data.success) {
-                window.location.href = "admin-panel.html";
+                window.location.href = "/protected/adminPanel/html/admin-panel.html";
             }
             else {
                 throw new Error(data.message);

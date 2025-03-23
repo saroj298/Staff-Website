@@ -1,0 +1,197 @@
+:root {
+    --scale: 1;
+}
+
+/* Global Reset and Base Styles */
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #333;
+    overflow-x: hidden;
+}
+
+/* Fixed Header (Top Bar) with Grid Layout */
+.topdisplay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    display: grid;
+    grid-template-areas: "left center right";
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    background-color: darkblue;
+    padding: calc(15px * var(--scale)) calc(20px * var(--scale));
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+/* Assign each element a grid area.
+   (We assume your HTML order is: first button = Sign Out, second button = Generate Account Creation Token, then h1) */
+.topdisplay button:first-of-type {
+    grid-area: left;
+    justify-self: start;
+}
+
+.topdisplay h1 {
+    grid-area: center;
+    text-align: center;
+    margin: 0;
+    font-size: calc(30px * var(--scale));
+    color: white;
+    white-space: nowrap;
+}
+
+.topdisplay button:nth-of-type(2) {
+    grid-area: right;
+    justify-self: end;
+}
+
+/* Header Button Shared Styling */
+.topdisplay button {
+    background-color: darkcyan;
+    color: white;
+    border: none;
+    padding: calc(10px * var(--scale)) calc(15px * var(--scale));
+    font-size: calc(20px * var(--scale));
+    border-radius: calc(5px * var(--scale));
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    /* Remove extra margin since grid areas handle placement */
+}
+
+.topdisplay button:hover {
+    background-color: #008080;
+}
+
+/* Main Content: add top padding so content is not hidden behind fixed header */
+main {
+    padding-top: calc(90px * var(--scale)); /* Adjust this value if your header height changes */
+}
+
+/* Main Add Event Button */
+main > button {
+    margin: calc(20px * var(--scale));
+    padding: calc(10px * var(--scale)) calc(20px * var(--scale));
+    font-size: calc(20px * var(--scale));
+    background-color: darkcyan;
+    color: white;
+    border: none;
+    border-radius: calc(5px * var(--scale));
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+main > button:hover {
+    background-color: #008080;
+}
+
+/* Events Section Container */
+.events {
+    padding: calc(20px * var(--scale));
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: calc(20px * var(--scale));
+    background-color: transparent;
+}
+
+/* Event Card Styling */
+.events > div {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: calc(5px * var(--scale));
+    padding: calc(15px * var(--scale));
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: calc(8px * var(--scale));
+}
+
+.events > div h3 {
+    margin: 0;
+    color: darkblue;
+    font-size: calc(24px * var(--scale));
+}
+
+.events > div p {
+    margin: 0;
+    font-size: calc(16px * var(--scale));
+    line-height: 1.4;
+}
+
+/* Flex container for event card buttons */
+.event-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: calc(5px * var(--scale));
+    margin-top: calc(10px * var(--scale));
+}
+
+.event-buttons button {
+    padding: calc(8px * var(--scale)) calc(12px * var(--scale));
+    font-size: calc(16px * var(--scale));
+    border: none;
+    border-radius: calc(4px * var(--scale));
+    cursor: pointer;
+    transition: background-color 0.3s ease, opacity 0.3s ease;
+}
+
+.event-buttons button.view-btn {
+    background-color: darkcyan;
+    color: white;
+}
+
+.event-buttons button.edit-btn {
+    background-color: #ffa500;
+    color: white;
+}
+
+.event-buttons button.remove-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+    .topdisplay h1 {
+        font-size: calc(24px * var(--scale));
+    }
+    .topdisplay button {
+        font-size: calc(18px * var(--scale));
+        padding: calc(8px * var(--scale)) calc(10px * var(--scale));
+    }
+    main > button {
+        font-size: calc(18px * var(--scale));
+        padding: calc(8px * var(--scale)) calc(12px * var(--scale));
+    }
+    .events {
+        grid-template-columns: 1fr;
+        padding: calc(10px * var(--scale));
+    }
+}
+
+/* Background Image and Transition (managed by JS) */
+.backgroundTransition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    opacity: 0;
+    transition: opacity 1.5s ease;
+    z-index: -1;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+.backgroundImage {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: -1;
+}

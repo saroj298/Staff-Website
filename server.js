@@ -7,9 +7,14 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
+const argon2 = require("argon2");
+const session = require("express-session");
 
 //Import functions from generateKeys.js
-const {generateKeyPair, testKeys, generateJWTKey} = require("./generateKeys.js")
+const {generateSessionKeys} = require("./generateKeys.js")
+
+//Import functions from databaseInteractions.js
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, getSubjects, getEvent, saveEvent, getStaff, removeToken, removeEvent} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -19,6 +24,22 @@ app.use(express.json());
 
 //Add middleware to handle cookies
 app.use(cookieParser());
+
+//Add middleware to handle sessions
+app.use(session({
+    secret: "cb7546c9ec9b9c43eb762bc81753dc6bc6f5b376b2ab180ce8373053ebf17714dd7d89da9659c1a0d6a95efd787d165e7d03e2f3d4c117ccb3aecb772f4d14bd",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {secure: false} //set to true for HTTPS
+}));
+
+//Add middleware to generate session keys
+app.use(async (req, res, next) => {
+    if (!req.session.publicKey || !req.session.privateKey || !req.session.JWTkey) {
+        await generateSessionKeys(req);
+    }
+    next();
+});
 
 //Set port
 const PORT = 3000;
@@ -46,8 +67,8 @@ function timeLog (str) {
 }
 
 //Function to encrypt string using RSAES-OAEP/SHA-256
-async function encryptStr(str) {
-    const publicKey = await fetchPublicKey();
+async function encryptStr(str, req) {
+    const publicKey = fetchPublicKey(req);
     const encryptedStr = crypto.publicEncrypt({
         key: publicKey,
         padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
@@ -57,12 +78,12 @@ async function encryptStr(str) {
 }
 
 //Function to fetch public
-async function fetchPublicKey(){return await fsPromise.readFile("public/public.pem", "utf8");}
+function fetchPublicKey(req){return req.session.publicKey;}
 
 //Function to decrypt string using RSAES-OAEP/SHA-256
-async function decryptStr(encryptedStrBase64) {
+async function decryptStr(encryptedStrBase64, req) {
     timeLog("--Starting Decryption--");
-    const privateKey = await fetchPrivateKey();
+    const privateKey = fetchPrivateKey(req);
     timeLog("Private key fetched");
     timeLog("EncrpytedStrBase64: " + encryptedStrBase64);
     const encryptedStr = Buffer.from(encryptedStrBase64, "base64");
@@ -78,7 +99,7 @@ async function decryptStr(encryptedStrBase64) {
 }
 
 //Function to fetch private key
-async function fetchPrivateKey(){return await fsPromise.readFile("private.pem", "utf8");}
+function fetchPrivateKey(req){return req.session.privateKey;}
 
 //Function to check if user is authorised for admin-panel.html
 async function authenticateToken(req, res, next) {
@@ -88,15 +109,15 @@ async function authenticateToken(req, res, next) {
     if (!encryptedToken) {
         timeLog("No token found");
         timeLog("--Authenticate token END Fail--");
-        return res.status(401).json({success: false, message: "Access denied no token provided"});
+        return res.status(404).send("Not Found");
     }
     try {
-        const token = await decryptStr(encryptedToken);
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        const token = await decryptStr(encryptedToken, req);
+        jwt.verify(token, req.session.JWTkey, (err, user) => {
             if (err) {
                 timeLog("Invalid or expired token found");
                 timeLog("--Authenticate token END Fail--");
-                return res.status(403).json({success: false, message: "Access denied invalid or expired token."});
+                return res.status(404).send("Not Found");
             }
             timeLog("Valid token found");
             req.user = user;
@@ -106,36 +127,30 @@ async function authenticateToken(req, res, next) {
     }
     catch (error) {
         console.error("Token decryption error: " + error);
-        return res.status(403).json({success: false, message: "Invalid or expired token."});
+        return res.status(404).send("Not Found");
     }
 }
 
 //Function to create a token and add it to cookies
-async function createToken(email, res) {
+async function createToken(email, req, res) {
     timeLog("--Create Token Start--");
-    timeLog("env file exists contianing JWT key: " + !!process.env.JWT_SECRET);
     const token = jwt.sign(
         {email},
-        process.env.JWT_SECRET,
-        {expiresIn: "10m"}
+        req.session.JWTkey,
+        {expiresIn: "5m"}
     );
     timeLog("User token created");
-    const encryptedToken = await encryptStr(token);
+    const encryptedToken = await encryptStr(token, req);
     timeLog("Token encrypted: " + encryptedToken);
     res.cookie("token", encryptedToken, {
         httpOnly: true,
         secure: false, //change to true for https
         sameSite: "Strict",
-        maxAge: 600000 //10m in millisecconds
+        maxAge: 300000 //5m in millisecconds
     });
     timeLog("Token added to cookie");
     timeLog("--Create Token END--");
 }
-
-//Serve admin-panel to only authorised users
-app.get("/admin-panel.html", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "admin-panel.html"));
-})
 
 //Request to check if token is valid
 app.get("/validate-token", authenticateToken, (req, res) => {
@@ -144,35 +159,39 @@ app.get("/validate-token", authenticateToken, (req, res) => {
 
 //Serve public key to client
 app.get("/publicKey", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "public.pem"));
-})
+    if (!req.session.publicKey) {
+        res.status(500).send("Public key not available.");
+    }
+    else {
+        res.send(req.session.publicKey);
+    }
+});
 
-//Serve files
-app.use(express.static('public'));
+//Serve protected files when JWT present
+app.use("/protected", authenticateToken, express.static(path.join(__dirname, "protected")));
+
+//Serve public files
+app.use(express.static(path.join(__dirname, "public")));
 
 //Serve index at page visit
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index/html/index.html"));
 });
 
-//Handle login
+//Handle login request
 app.post("/login", async (req, res) => {
     timeLog("---Dealing with login request---");
     try {
         const {encryptedEmailBase64, encryptedPasswordBase64} = req.body;
-        timeLog("Begining password decrypt");
-        const password = await decryptStr(encryptedPasswordBase64);
-        timeLog("Password decrypted");
         timeLog("Begining email decrypt");
-        const email = await decryptStr(encryptedEmailBase64);
+        const email = await decryptStr(encryptedEmailBase64, req);
         timeLog("Email decrypted");
-        //Dummy values replace with database lookup.
-        //Search database for email and find relevent password field and test if password matchs if so return valid entry
-        const validEmail = "email@gmail.com";
-        const validPassword = "password123";
-        if (email === validEmail && password === validPassword) {
+        timeLog("Validating credentials");
+        const accessLevel = await validateCredentialsStaff(email.toLowerCase(), await decryptStr(encryptedPasswordBase64, req));
+        if (accessLevel) {
+            req.session.accessLevel = accessLevel;
             timeLog("Valid credentals presented login success");
-            await createToken(email, res);
+            await createToken(email, req, res);
             res.json({success: true, message: "Login successful!"});
         }
         else {
@@ -187,10 +206,72 @@ app.post("/login", async (req, res) => {
     timeLog("---Login request END---")
 });
 
+async function generateAccountCreationToken() {
+    var token;
+    do {
+        token = crypto.randomBytes(8).toString("hex").match(/.{1,4}/g).join("-").toUpperCase();
+    } while (await isTokenValid(token));
+    return token;
+}
+
+app.get("/generateAccountCreationToken", async (req, res) => {
+    timeLog("---Generating Account Creation Token---");
+    const token = await generateAccountCreationToken();
+    timeLog("Token Generated")
+    const createdAt = Date.now();
+    storeToken(token, createdAt);
+    timeLog("Token Stored");
+    res.json({token});
+    timeLog("---Generate Account Creation Token END");
+});
+
+app.post("/createAccount", async (req, res) => {
+    timeLog("---Dealing with account creation request---");
+    try {
+        const {encryptedTokenBase64, encryptedEmailBase64, encryptedPasswordBase64} = req.body;
+        timeLog("Decrypting details");
+        const token = await decryptStr(encryptedTokenBase64, req);
+        const email = (await decryptStr(encryptedEmailBase64, req)).toLowerCase();
+        const hashedPassword = await argon2.hash(await decryptStr(encryptedPasswordBase64, req), {
+            type: argon2.argon2id,
+            memoryCost: 2 ** 16, //64MB
+            timeCost: 4, //No. Iterations
+            parallelism: 2 //No. Threads
+        });
+        timeLog("Details decrypted");
+        timeLog("Check for valid token");
+        if (!isTokenValid(token)) {
+            timeLog("Token invalid");
+            res.status(401).json({success: false, message: "Token is invalid."});
+            timeLog("---Account creation request END---");
+            return;
+        }
+        timeLog("Token valid");
+        timeLog("Check email is new");
+        if (!emailExists(email)) {
+            timeLog("Email already exists");
+            res.status(409).json({success: false, message: "Email is already in use."});
+            timeLog("---Account creation request END---");
+            return;
+        }
+        timeLog("Email new");
+        timeLog("Saving account to db");
+        saveAccount(email, hashedPassword);
+        removeToken(token);
+        res.json({success: true, message: "Account creation successful."});
+    }
+    catch (error) {
+        timeLog("An unexpected error occured.");
+        console.error("Error: " + error.message);
+        res.status(500).json({success: false, message: "Server error during account creation."});
+    }
+    timeLog("---Account creation request END---");
+})
+
 //Function to check if user has a currently valid token and if they do refresh it
 app.post("/refresh-token", authenticateToken, async (req, res) => {
     try {
-        await createToken(req.user.email, res);
+        await createToken(req.user.email, req, res);
         return res.json({success: true, message: "Token refreshed successfully"});
     }
     catch (error){
@@ -199,25 +280,116 @@ app.post("/refresh-token", authenticateToken, async (req, res) => {
     }
 })
 
+app.get("/events", async (req, res) => {
+    timeLog("Fetching events");
+    try {
+        const events = await getEvents();
+        res.json(events);
+        timeLog("Events fetched");
+    }
+    catch (error) {
+        console.error("Error fetching events: " + error);
+        res.status(500).json({success: false, message: "Server error retrieving events."});
+        timeLog("Event fetch failed: " + error);
+    }
+});
+
+app.get("/signOut", (req, res) => {
+    timeLog("Logout request recived");
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: false, //change to true for HTTPS
+        sameSite: "strict",
+    });
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
+    timeLog("Logout successfull");
+});
+
+app.get("/getEvent", authenticateToken, async(req, res) => {
+    const eventID = req.query.eventID;
+    if(!eventID) {
+        return res.status(400).json({success: false, message: "No eventID provided"});
+    }
+    const event = await getEvent(eventID);
+    if (event == null) {
+        return res.status(400).json({success: false, message: "No data with eventID in database."});
+    }
+    res.json(event);
+});
+
+app.post("/createEvent", async (req, res) => {
+    timeLog("--Create event start--");
+    try {
+        const newEvent = req.body;
+        const savedEvent = await saveEvent(newEvent);
+        res.json({success: true, message: "Event created successfully", event: savedEvent});
+    }
+    catch (error) {
+        timeLog("Failed.");
+        console.error("Error creating event: " + error);
+        res.status(500).json({success: false, message: "Server error creating event"});
+    }
+    timeLog("--Create event END--");
+});
+
+app.post("/updateEvent", async (req, res) => {
+    timeLog("--Update event start--");
+    try {
+        const updatedEvent = req.body;
+        const savedEvent = await saveEvent(updatedEvent);
+        res.json({success: true, message: "Event updated successfully", event: savedEvent});
+    }
+    catch (error) {
+        timeLog("Failed.");
+        console.error("Error updating event: " + error);
+        res.status(500).json({success: false, message: "Server error updating event"});
+    }
+    timeLog("--Update event END--");
+});
+
+app.get("/getSubjects", async (req, res) => {
+    timeLog("--Getting Subjects--");
+    try {
+        const subjects = await getSubjects();
+        res.json(subjects);
+    }
+    catch(error) {
+        timeLog("Failed.");
+        console.error("Error retrieving subjects: " + error);
+        res.status(500).json({success: false, message: "Server error retriving subjects."});
+    }
+    timeLog("--Getting Subjects END--");
+});
+
+app.get("/getStaff", async (req, res) => {
+    timeLog("--Getting Staff--");
+    try {
+        const staff = await getStaff();
+        res.json(staff);
+    }
+    catch(error) {
+        timeLog("Failed.");
+        console.error("Error retrieving staff: " + error);
+        res.status(500).json({success: false, message: "Server error retriving staff."});
+    }
+    timeLog("--Getting Staff END--");
+});
+
+app.delete("/removeEvent", async (req, res) => {
+    try {
+        const {eventID} = req.body;
+        await removeEvent(eventID);
+        res.json({success: true, message: "Event removed successfully"});
+    }
+    catch (error) {
+        console.error("Error removing event: " + error);
+        res.status(500).json({success: false, message: "Server error removing event"});
+    }
+});
+
 //Start the server
 app.listen(PORT, async () => {
-    //TODO remove key generation from server start and add to each session at some point.
-    
-    timeLog("---Begining key generation---");
-    generateKeyPair();
-    while (!testKeys()) {
-        timeLog("Public & Private key generation failed trying again.");
-        generateKeyPair();
-    }
-    if (!fs.existsSync(".env")) {
-        await generateJWTKey();
-    }
-    else {
-        timeLog(".env file already exists. Skipping key generation.");
-    }
-    dotenv.config()
-    timeLog ("Key generation success.");
-    timeLog("---Key generation END---");
-
     timeLog("Server is running on: http://localhost:" + PORT);
 });
