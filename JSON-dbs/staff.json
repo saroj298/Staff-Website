@@ -1,0 +1,7 @@
+[
+  {
+    "email": "email@gmail.com",
+    "hashedPassword": "$argon2id$v=19$m=65536,t=4,p=2$aWOlAzna3D6BK+d1wgaeRg$qnIQtnT6cLIXjNMnzDPxyDFZ1HFMKd9HSC9pwsDQvro",
+    "accessLevel": "staff"
+  }
+]

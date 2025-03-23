@@ -1,0 +1,5 @@
+[
+    { "subjectCode": "MATH", "subjectName": "Mathematics" },
+    { "subjectCode": "CS", "subjectName": "Computer Science" },
+    { "subjectCode": "ART", "subjectName": "Art" }
+  ]  

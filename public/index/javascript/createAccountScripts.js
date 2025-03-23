@@ -93,12 +93,11 @@ async function createAccount(event) {
         document.getElementById("confirmPassword").value = "";
         return;
     }
-
     //Pass create account request to server
     try {
-        const encryptedEmailBase64 = encryptString(email);
-        const encryptedPasswordBase64 = encryptString(document.getElementById("password").innerText);
-        const encryptedTokenBase64 = encryptString(token);
+        const encryptedEmailBase64 = await encryptString(email);
+        const encryptedPasswordBase64 = await encryptString(document.getElementById("password").innerText);
+        const encryptedTokenBase64 = await encryptString(token);
         const response = await fetch("/createAccount", {
             method: "POST",
             headers: {

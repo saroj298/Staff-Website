@@ -1,149 +1,169 @@
+/*
+Temporary Contents I need the database to be setup to interactive with it
+this file origionally had a bunch of functions returning fixed values
+and was then changed to use 3 JSON files like temp database tables.
+*/
+
 //node module imports
 const argon2 = require("argon2");
+const path = require("path");
+const fsPromise = require("fs/promises");
 
-//Function will be in different JS file for database interactions
-async function validateCredentialsStaff(email, password) {
-    //Search database for record with email if none exists return null here
-    if (!email) { //Example search database if email is not present in data base return null
-        return null;
+//File paths for JSON database files.
+const STAFF_DB_PATH = path.join(__dirname, "JSON-dbs/staff.json");
+const TOKENS_DB_PATH = path.join(__dirname, "JSON-dbs/accountCreationTokens.json");
+const EVENTS_DB_PATH = path.join(__dirname, "JSON-dbs/events.json");
+const SUBJECTS_DB_PATH = path.join(__dirname, "JSON-dbs/subjects.json");
+
+//Helper function to read JSON form file.
+async function readJSON(filePath) {
+    try {
+        const data = await fsPromise.readFile(filePath, "utf8");
+        return data ? JSON.parse(data) : [];
     }
-    //If a record for email does exist fetch password from record
-    //Ignore this im hashing the stored password example in the same way passwords would be stored in database
-    storedPassword = await argon2.hash("password123", {
-        type: argon2.argon2id,
-        memoryCost: 2 ** 16, //64MB
-        timeCost: 4, //No. Iterations
-        parallelism: 2 //No. Threads
-    });
-    //Check password against storedPassword
-    if (await argon2.verify(storedPassword, password)) {
-        //If password is correct
-        return "admin"; //return access level (fetch access level from data base "admin", "staff", "headstaff" etc)
+    catch (error) {
+        console.log("Error reading from JSON file: " + error);
+        return[];
     }
-    //If password is false return null
-    return null;
-
-    /*
-    So TLDR: "SELECT * FROM staffTbl WHERE email == " + email;
-           : if returns null return null else continute in function
-           : "SELECT password FROM staffTbl WHERE email == " + email;
-           : use password to check against user input if valid return true
-           : return null 
-    */
+}
+//Helper function to write JSON to a file.
+async function writeJSON(filePath, data) {
+    await fsPromise.writeFile(filePath, JSON.stringify(data, null, 2), "utf8");
 }
 
-//Another temp function to be in db interactions to store a token
-function storeToken(token, createdAt){
-    removeOutOfDateTokens();
-    return;
-}
+/* --- EVENTS FUNTIONS --- */
 
-//Another temp function to be in database interactions js which will check the table containing staff account creation
-//tokens to check if the one provided is valid. This is done 2 ways tokens will have a 24hr lifetime so needs to check
-//not only that token is present in db but that it is still alive aswell. (would be nice if this function deleted out of 
-//lifetime tokens too)
-async function isTokenValid(token) {
-    //Temp return true
-    removeOutOfDateTokens();
-    return true;
-}
-
-//Another temp function to be in database interactions js which will check the staff accounts table to see
-//if the email entered is already in use
-async function emailExists(email) {
-    //temp return false
-    return false;
-}
-
-//Another temp function to save the account to the database
-async function saveAccount(email, hashedPassword, accessLevel = "staff") {
-    //temp return
-    return;
-}
-
-//Another temp function that will be in db interactions
+//Get all events data
 async function getEvents() {
-    const events = [
-        {
-            eventID: 0,
-            eventName: "Computer Demo",
-            detailsShort: "A demonstration of how the uni computers work",
-            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
-            staffAssigned: ["Computer science teacher 1"],
-            numberStudentsSignedUp: 35,
-            totalSpaces: 56,
-            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
-            startTime: new Date("2025-03-21T11:00:00").getTime(),
-            endTime: new Date("2025-03-21T11:00:00").getTime(),
-            location: "Room 205, Tom Scott Building"
-        },
-        {
-            eventID: 1,
-            eventName: "Computer Demo",
-            detailsShort: "A demonstration of how the uni computers work",
-            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
-            staffAssigned: ["Computer science teacher 1"],
-            numberStudentsSignedUp: 35,
-            totalSpaces: 56,
-            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
-            startTime: new Date("2025-03-21T11:00:00").getTime(),
-            endTime: new Date("2025-03-21T11:00:00").getTime(),
-            location: "Room 205, Tom Scott Building"
-        },
-        {
-            eventID: 2,
-            eventName: "Computer Demo",
-            detailsShort: "A demonstration of how the uni computers work",
-            detailsLong: "A in-depth demonstration of using the university computers, accessing software, and what to do when issues arise",
-            staffAssigned: ["Computer science teacher 1"],
-            numberStudentsSignedUp: 35,
-            totalSpaces: 56,
-            releventSubjects: ["CS", "ART", "MATH", "HISTORY"],
-            startTime: new Date("2025-03-21T11:00:00").getTime(),
-            endTime: new Date("2025-03-21T11:00:00").getTime(),
-            location: "Room 205, Tom Scott Building"
-        }
-    ];
-    return events;
+    return await readJSON(EVENTS_DB_PATH);
 }
 
-//Temp function which will get a event given an event ID
+//Get a event given ID
 async function getEvent(eventID) {
-    //temp method
     const events = await getEvents();
     return events.find(e => e.eventID == eventID) || null;
 }
 
-//Temp function which will remove the token from the db
-function removeToken(token) {
-    return;
+//Get next valid eventID
+async function getNextID() {
+    const events = await getEvents();
+    return events.length > 0 ? Math.max(...events.map(e => e.eventID)) + 1 : 1;
 }
 
-//Temp function will remove all out of date tokens from the db
-function removeOutOfDateTokens(token) {
-    return;
-}
-
-//More temp functions to do with events writing and updating
+//Save or update an event record.
 async function saveEvent(eventData) {
+    const events = await getEvents();
     if (!eventData.eventID) {
-        //Create new event
         eventData.eventID = await getNextID();
+        events.push(eventData);
     }
     else {
-        //Update exisitng event
+        const index = events.findIndex(e => e.eventID == eventData.eventID);
+        if (index !== -1) {
+            events[index] = eventData;
+        }
+        else {
+            events.push(eventData);
+        }
     }
+    await writeJSON(EVENTS_DB_PATH, events);
+    return eventData;
 }
 
-//Temp function should fetch ids and work out next valid id
-async function getNextID(){
-    const events = await getEvents();
-    return events.length > 0 ? Math.max(...events.map(e=>e.eventID))+1 : 1;
+//Remove an event record.
+async function removeEvent(eventID) {
+    var events = await getEvents();
+    events = events.filter(e => e.eventID != eventID);
+    await writeJSON(EVENTS_DB_PATH, events);
 }
 
-//Temp add to MMP
-function removeEvent(event) {
-    return;
+/* --- STAFF FUNTIONS --- */
+
+//Get staff records
+async function getStaff() {
+    return await readJSON(STAFF_DB_PATH);
+}
+
+//Check if account with given email exists
+async function emailExists(email) {
+    const staff = await getStaff();
+    return staff.some(s => s.email.toLowerCase() === email.toLowerCase());
+}
+
+//Validate staff login credentals
+async function validateCredentialsStaff(email, password) {
+    if (!await emailExists(email)) return null;
+    const staff = await getStaff();
+    const account = staff.find(s => s.email.toLowerCase() === email.toLowerCase());
+    if (!account) return null;
+    if (await argon2.verify(account.hashedPassword, password)) {
+        return account.accessLevel;
+    }
+    return null;
+}
+
+//Create new staff account
+async function saveAccount(email, hashedPassword, accessLevel = "staff") {
+    const staff = await getStaff();
+    if (await emailExists(email)) {
+        return null;
+    }
+    const newAccount = {email, hashedPassword, accessLevel};
+    staff.push(newAccount);
+    await writeJSON(STAFF_DB_PATH, staff);
+    return newAccount;
+}
+
+/* --- ACCOUNT CREATION TOKEN FUNTIONS --- */
+
+//Retreive all account creation token records
+async function getAccountCreationTokens() {
+    return await readJSON(TOKENS_DB_PATH);
+}
+
+//Store token and time it was created.
+async function storeToken(token, createdAt) {
+    const tokens = await getAccountCreationTokens();
+    tokens.push({token, createdAt});
+    await writeJSON(TOKENS_DB_PATH, tokens);
+    await removeOutOfDateTokens();
+    return true;
+}
+
+//Check if token is valid. In db and in 24hrs of created at
+async function isTokenValid(token) {
+    const tokens = await getAccountCreationTokens();
+    const tokenRecord = tokens.find(t => t.token === token);
+    if (!tokenRecord) {
+        return false;
+    }
+    const tokenAge = Date.now() - tokenRecord.createdAt;
+    await removeOutOfDateTokens();
+    if (tokenAge > 86400000) {
+        return false;
+    }
+    return true;
+}
+
+//Remove out of date tokens
+async function removeOutOfDateTokens() {
+    const tokens = await getAccountCreationTokens();
+    const validTokens = tokens.filter(t => (Date.now() - t.createdAt) <= 86400000);
+    await writeJSON(TOKENS_DB_PATH, validTokens);
+}
+
+//Remove token from db
+async function removeToken(token) {
+    var tokens = await getAccountCreationTokens();
+    tokens = tokens.filter(t => t.token != token);
+    await writeJSON(TOKENS_DB_PATH, tokens);
+}
+
+/* --- SUBJECTS FUNTIONS --- */
+
+//Get all subjects from db.
+async function getSubjects() {
+    return await readJSON(SUBJECTS_DB_PATH)
 }
 
 // Export the functions so they can be imported in your server.js.
@@ -154,8 +174,10 @@ module.exports = {
     emailExists,
     storeToken,
     validateCredentialsStaff,
-    removeToken,
     getEvent,
     removeEvent,
-    saveEvent
+    saveEvent,
+    getSubjects,
+    getStaff,
+    removeToken
 };

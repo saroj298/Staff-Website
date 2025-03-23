@@ -38,12 +38,24 @@ async function loadEvent(){
     const mode = sessionStorage.getItem("eventMode");
     const eventID = sessionStorage.getItem("eventID");
 
+    //Fetch staff & subjects from db
+    const subjectsResponse = await fetch("/getSubjects", {
+        credentials: "include"
+    });
+    const availableSubjects = [];
+    if (subjectsResponse.ok) {
+        const subjectsData = await subjectsResponse.json();
+        availableSubjects = subjectsData.map(s => s.subjectCode);
+    }
 
-    //ADD THESE TO DATABASE INTERACTIONS
-    //tmp values for now should fetch staff and subjects from db
-    const availableSubjects = ["MATH", "CS", "ART"];
-    const avaliableStaff = ["teacher1@example.com", "teacher2@example.com"];
-
+    const staffResponse = await fetch("/getStaff", {
+        credentials: "include"
+    });
+    const avaliableStaff = [];
+    if (staffResponse.ok) {
+        const staffData = await staffResponse.json();
+        avaliableStaff = staffData.map(s => s.email);
+    }
 
     const eventSection = document.getElementById("event");
     eventData = {

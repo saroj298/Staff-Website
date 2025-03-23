@@ -14,7 +14,7 @@ const session = require("express-session");
 const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
-const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken, getEvent, saveEvent} = require("./databaseInteractions.js");
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, getSubjects, getEvent, saveEvent, getStaff, removeToken} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -210,8 +210,7 @@ async function generateAccountCreationToken() {
     var token;
     do {
         token = crypto.randomBytes(8).toString("hex").match(/.{1,4}/g).join("-").toUpperCase();
-    } while (!await isTokenValid(token)); //This line for now is referancing a funciton always returning true until database interactions is created
-                                          //this line is !await isTokenValid(token) remove the ! when db functions added.
+    } while (await isTokenValid(token));
     return token;
 }
 
@@ -219,7 +218,7 @@ app.get("/generateAccountCreationToken", async (req, res) => {
     timeLog("---Generating Account Creation Token---");
     const token = await generateAccountCreationToken();
     timeLog("Token Generated")
-    const createdAt = new Date().toISOString();
+    const createdAt = Date.now();
     storeToken(token, createdAt);
     timeLog("Token Stored");
     res.json({token});
@@ -232,7 +231,7 @@ app.post("/createAccount", async (req, res) => {
         const {encryptedTokenBase64, encryptedEmailBase64, encryptedPasswordBase64} = req.body;
         timeLog("Decrypting details");
         const token = await decryptStr(encryptedTokenBase64, req);
-        const email = await decryptStr(encryptedEmailBase64, req).toLowerCase();
+        const email = (await decryptStr(encryptedEmailBase64, req)).toLowerCase();
         const hashedPassword = await argon2.hash(await decryptStr(encryptedPasswordBase64, req), {
             type: argon2.argon2id,
             memoryCost: 2 ** 16, //64MB
@@ -348,6 +347,34 @@ app.post("/updateEvent", async (req, res) => {
         res.status(500).json({success: false, message: "Server error updating event"});
     }
     timeLog("--Update event END--");
+});
+
+app.get("/getSubjects", async (req, res) => {
+    timeLog("--Getting Subjects--");
+    try {
+        const subjects = await getSubjects();
+        res.json(subjects);
+    }
+    catch(error) {
+        timeLog("Failed.");
+        console.error("Error retrieving subjects: " + error);
+        res.status(500).json({success: false, message: "Server error retriving subjects."});
+    }
+    timeLog("--Getting Subjects END--");
+});
+
+app.get("/getStaff", async (req, res) => {
+    timeLog("--Getting Staff--");
+    try {
+        const staff = await getStaff();
+        res.json(staff);
+    }
+    catch(error) {
+        timeLog("Failed.");
+        console.error("Error retrieving staff: " + error);
+        res.status(500).json({success: false, message: "Server error retriving staff."});
+    }
+    timeLog("--Getting Staff END--");
 });
 
 //Start the server
