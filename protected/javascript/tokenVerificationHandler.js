@@ -5,9 +5,7 @@ let userActive = true;
 function startTokenRefreshChecker() {
     async function checkActivity() {
         //Refresh token automatically if user has activity in last 4min
-        console.log("User activity check");
         if(userActive) {
-            console.log("User active");
             await refreshToken();
             userActive = false;
             return;
@@ -16,7 +14,6 @@ function startTokenRefreshChecker() {
         //If user has no activity give them a popup warning them they will be signed out
         //if they dont click otherwise
         else {
-            console.log("User inactive");
             const stillHere = await promptUserForRefreshWithCountdown();
             if (stillHere) {
                 await refreshToken();
@@ -24,7 +21,15 @@ function startTokenRefreshChecker() {
                 return;
             }
             else {
-                signOut();
+                fetch("/signOut", {
+                    method: "GET",
+                    credentials: "include"
+                }).then(response => {
+                    window.location.href = "/";
+                }).catch(error => {
+                    console.error("Error signing out: " + error);
+                    window.location.href = "/";
+                });
             }
         }
     }

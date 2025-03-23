@@ -131,7 +131,8 @@ async function loadEvent(){
             <label for = "endTime">End Time:</label>
             <input type = "datetime-local" id = "endTime" name = "endTime" value = "${formatTime(eventData.endTime)}" ${disabledField}> 
         </div>
-        <button id = "submitEvent" type = "button" onclick = "submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
+        <p id = "errorDisplay"></p>
+        <button id = "submitEvent" type = "button" onclick = "await submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
     `;
     if (mode === "add"){
         document.getElementById("eventIDContainer").remove();
@@ -142,14 +143,13 @@ async function loadEvent(){
     }
 }
 
-function submitForm(){
+async function submitForm(){
     //Do submision stuff
     console.log("Mode: " + sessionStorage.eventMode);
     const mode = sessionStorage.eventMode;
-    var eventID = 0;
-    var studnetsSignedUp = 0;
+    var eventID;
+    var studnetsSignedUp;
     if(mode === "add") {
-        eventID = 0 //Call function in db to get next avaliable id
         studnetsSignedUp = 0;
     }
     else {
@@ -160,26 +160,51 @@ function submitForm(){
     const location = document.getElementById("eventLocation").value;
     const detailsShort = document.getElementById("detailsShort").value;
     const detailsLong = document.getElementById("detailsLong").value;
-    const staffAssigend = document.getElementById("staffAssigned").value;
+    const staffAssigend = Array.from(document.getElementById("staffAssigned").selectedOptions.map(opt => opt.value));
     const totalSpaces = document.getElementById("totalSpaces").value;
-    const releventSubjects = document.getElementById("releventSubjects").value;
+    const releventSubjects = Array.from(document.getElementById("releventSubjects").selectedOptions.map(opt => opt.value));
     const startTime = parseCustomDate(document.getElementById("startTime").value);
     const endTime = parseCustomDate(document.getElementById("endTime").value);
 
-
-
-    //Temp prints to show updating working
-    console.log("EventID: " + eventID);
-    console.log("Event Name: " + eventName);
-    console.log("Event Location: " + location);
-    console.log("Details Short: " + detailsShort);
-    console.log("Details Long: " + detailsLong);
-    console.log("Staff Assigned: " + staffAssigend);
-    console.log("Students Signed Up: " + studnetsSignedUp);
-    console.log("Total Spaces: " + totalSpaces);
-    console.log("Relevant Subjects: " + releventSubjects);
-    console.log("Start Time: " + formatTime(startTime));
-    console.log("End Time: " + formatTime(endTime));
+    //Check for issues with form if none send request to server.
+    const errorDisplay = document.getElementById("errorDisplay");
+    if (!eventName || !location || !detailsShort || !detailsLong || isNan(totalSpaces) || isNaN(startTime) || isNaN(endTime)) {
+        errorDisplay.innerText = "One or more fields left blank.";
+        return;
+    }
+    else if (startTime > endTime) {
+        errorDisplay.innerText = "Start time cannot be later than end time.";
+        return;
+    }
+    const eventData = {
+        eventID: eventID,
+        eventName: eventName,
+        location: location,
+        detailsShort: detailsShort,
+        detailsLong: detailsLong,
+        staffAssigend: staffAssigend,
+        studnetsSignedUp: studnetsSignedUp,
+        totalSpaces: totalSpaces,
+        releventSubjects: releventSubjects,
+        startTime: startTime,
+        endTime: endTime
+    };
+    const response = await fetch((mode === "add" ? "/createEvent" : "/updateEvent"), {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "include",
+        body: JSON.stringify(eventData)
+    });
+    const result = await response.json();
+    if (!response.ok) {
+        errorDisplay.innerText("An error occured saving event to database: " + result.message);
+        console.error("An error occured saving event to database: " + result.message);
+        return;
+    }
+    //Success
+    sessionStorage.eventMode = "view";
+    await loadEvent();
+    document.getElementById("errorDisplay").innerText = "Event " + (mode === "add" ? "created" : "updated") + " successfully.";
 }
 function formatTime(ms) {
     const date = new Date(ms);
@@ -208,7 +233,7 @@ function parseCustomDate(dateString) {
     const [hours, minutes] = timePart.split(":").map(Number);
     // Create a Date object
     const dateObj = new Date(year, month - 1, day, hours, minutes);
-    return dateObj.getTime();
+    return parseInt(dateObj.getTime());
 }
 
 if (document.readyState !== "loading") {

@@ -14,7 +14,7 @@ const session = require("express-session");
 const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
-const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken, getEvent} = require("./databaseInteractions.js");
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, removeToken, getEvent, saveEvent} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -318,6 +318,36 @@ app.get("/getEvent", authenticateToken, async(req, res) => {
         return res.status(400).json({success: false, message: "No data with eventID in database."});
     }
     res.json(event);
+});
+
+app.post("/createEvent", async (req, res) => {
+    timeLog("--Create event start--");
+    try {
+        const newEvent = req.body;
+        const savedEvent = await saveEvent(newEvent);
+        res.json({success: true, message: "Event created successfully", event: savedEvent});
+    }
+    catch (error) {
+        timeLog("Failed.");
+        console.error("Error creating event: " + error);
+        res.status(500).json({success: false, message: "Server error creating event"});
+    }
+    timeLog("--Create event END--");
+});
+
+app.post("/updateEvent", async (req, res) => {
+    timeLog("--Update event start--");
+    try {
+        const updatedEvent = req.body;
+        const savedEvent = await saveEvent(updatedEvent);
+        res.json({success: true, message: "Event updated successfully", event: savedEvent});
+    }
+    catch (error) {
+        timeLog("Failed.");
+        console.error("Error updating event: " + error);
+        res.status(500).json({success: false, message: "Server error updating event"});
+    }
+    timeLog("--Update event END--");
 });
 
 //Start the server

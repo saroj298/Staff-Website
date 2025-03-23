@@ -125,14 +125,23 @@ function removeOutOfDateTokens(token) {
 }
 
 //More temp functions to do with events writing and updating
-function addEvent(event) {
-    return;
+async function saveEvent(eventData) {
+    if (!eventData.eventID) {
+        //Create new event
+        eventData.eventID = await getNextID();
+    }
+    else {
+        //Update exisitng event
+    }
 }
 
-function updateEvent(event) {
-    return;
+//Temp function should fetch ids and work out next valid id
+async function getNextID(){
+    const events = await getEvents();
+    return events.length > 0 ? Math.max(...events.map(e=>e.eventID))+1 : 1;
 }
 
+//Temp add to MMP
 function removeEvent(event) {
     return;
 }
@@ -146,5 +155,7 @@ module.exports = {
     storeToken,
     validateCredentialsStaff,
     removeToken,
-    getEvent
+    getEvent,
+    removeEvent,
+    saveEvent
 };
