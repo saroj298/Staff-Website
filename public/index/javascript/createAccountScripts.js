@@ -96,7 +96,7 @@ async function createAccount(event) {
     //Pass create account request to server
     try {
         const encryptedEmailBase64 = await encryptString(email);
-        const encryptedPasswordBase64 = await encryptString(document.getElementById("password").innerText);
+        const encryptedPasswordBase64 = await encryptString(document.getElementById("password").value);
         const encryptedTokenBase64 = await encryptString(token);
         const response = await fetch("/createAccount", {
             method: "POST",

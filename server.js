@@ -256,8 +256,8 @@ app.post("/createAccount", async (req, res) => {
         }
         timeLog("Email new");
         timeLog("Saving account to db");
-        saveAccount(email, hashedPassword);
-        removeToken(token);
+        await saveAccount(email, hashedPassword);
+        await removeToken(token);
         res.json({success: true, message: "Account creation successful."});
     }
     catch (error) {
