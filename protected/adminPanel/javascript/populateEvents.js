@@ -49,6 +49,7 @@ function populateEvents(eventsData) {
         <p>${formatTime(event.endTime)}</p>
         <button onclick = "viewEvent(`+event.eventID+`)">View</button>
         <button onclick = "editEvent(`+event.eventID+`)">Edit</button>
+        <button onclick = "removeEvent(`+event.eventID+`)">Remove</button>
         `;
         eventsContainer.appendChild(eventDiv);
     });
@@ -63,6 +64,27 @@ function editEvent(eventID) {
     sessionStorage.setItem("eventMode", "edit");
     sessionStorage.setItem("eventID", eventID);
     window.location.href = "/protected/events/html/event.html";
+}
+async function removeEvent(eventID) {
+    try {
+        const response = await fetch("/removeEvent", {
+            method: "DELETE",
+            credentials: "include",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({eventID: eventID})
+        });
+        const data = await response.json();
+        if (!response.ok) {
+            console.error("Server failed to remove event.");
+            return;
+        }
+        await loadEvents();
+    }
+    catch (error) {
+        console.error("Error removing event: " + error);
+    }
 }
 function addEvent() {
     sessionStorage.setItem("eventMode", "add");

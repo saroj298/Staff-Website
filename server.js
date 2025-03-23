@@ -14,7 +14,7 @@ const session = require("express-session");
 const {generateSessionKeys} = require("./generateKeys.js")
 
 //Import functions from databaseInteractions.js
-const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, getSubjects, getEvent, saveEvent, getStaff, removeToken} = require("./databaseInteractions.js");
+const {getEvents, saveAccount, isTokenValid, emailExists, storeToken, validateCredentialsStaff, getSubjects, getEvent, saveEvent, getStaff, removeToken, removeEvent} = require("./databaseInteractions.js");
 
 //Create express application
 const app = express();
@@ -375,6 +375,18 @@ app.get("/getStaff", async (req, res) => {
         res.status(500).json({success: false, message: "Server error retriving staff."});
     }
     timeLog("--Getting Staff END--");
+});
+
+app.delete("/removeEvent", async (req, res) => {
+    try {
+        const {eventID} = req.body;
+        await removeEvent(eventID);
+        res.json({success: true, message: "Event removed successfully"});
+    }
+    catch (error) {
+        console.error("Error removing event: " + error);
+        res.status(500).json({success: false, message: "Server error removing event"});
+    }
 });
 
 //Start the server

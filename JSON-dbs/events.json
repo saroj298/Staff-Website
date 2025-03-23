@@ -1,42 +1,38 @@
 [
-    {
-      "eventID": 1,
-      "eventName": "Computer Demo",
-      "location": "Room 205, Tom Scott Building",
-      "detailsShort": "A demonstration of university computer usage",
-      "detailsLong": "An in-depth demonstration on using university computers, accessing software, and troubleshooting common issues.",
-      "staffAssigned": ["teacher1@example.com"],
-      "numberStudentsSignedUp": 35,
-      "totalSpaces": 56,
-      "releventSubjects": ["CS", "ART", "MATH", "HISTORY"],
-      "startTime": 1730000000000,
-      "endTime": 1730007200000
-    },
-    {
-      "eventID": 2,
-      "eventName": "Science Expo",
-      "location": "Lab 3, Science Building",
-      "detailsShort": "An interactive science expo",
-      "detailsLong": "A hands-on science expo featuring interactive experiments and demonstrations in physics and chemistry.",
-      "staffAssigned": ["teacher2@example.com"],
-      "numberStudentsSignedUp": 40,
-      "totalSpaces": 60,
-      "releventSubjects": ["PHYSICS", "CHEMISTRY"],
-      "startTime": 1730010800000,
-      "endTime": 1730018000000
-    },
-    {
-      "eventID": 3,
-      "eventName": "Literature Seminar",
-      "location": "Auditorium, Arts Building",
-      "detailsShort": "A seminar on classic literature",
-      "detailsLong": "A detailed seminar discussing the themes, characters, and narrative techniques of classic literature.",
-      "staffAssigned": ["teacher3@example.com"],
-      "numberStudentsSignedUp": 20,
-      "totalSpaces": 40,
-      "releventSubjects": ["LITERATURE", "HISTORY"],
-      "startTime": 1730021600000,
-      "endTime": 1730025200000
-    }
-  ]
-  
+  {
+    "eventID": 2,
+    "eventName": "Science Expo",
+    "location": "Lab 3, Science Building",
+    "detailsShort": "An interactive science expo",
+    "detailsLong": "A hands-on science expo featuring interactive experiments and demonstrations in physics and chemistry.",
+    "staffAssigned": [
+      "teacher2@example.com"
+    ],
+    "numberStudentsSignedUp": 40,
+    "totalSpaces": 60,
+    "releventSubjects": [
+      "PHYSICS",
+      "CHEMISTRY"
+    ],
+    "startTime": 1730010800000,
+    "endTime": 1730018000000
+  },
+  {
+    "eventID": 3,
+    "eventName": "Literature Seminar",
+    "location": "Auditorium, Arts Building",
+    "detailsShort": "A seminar on classic literature",
+    "detailsLong": "A detailed seminar discussing the themes, characters, and narrative techniques of classic literature.",
+    "staffAssigned": [
+      "teacher3@example.com"
+    ],
+    "numberStudentsSignedUp": 20,
+    "totalSpaces": 40,
+    "releventSubjects": [
+      "LITERATURE",
+      "HISTORY"
+    ],
+    "startTime": 1730021600000,
+    "endTime": 1730025200000
+  }
+]
