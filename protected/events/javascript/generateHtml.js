@@ -42,7 +42,7 @@ async function loadEvent(){
     const subjectsResponse = await fetch("/getSubjects", {
         credentials: "include"
     });
-    const availableSubjects = [];
+    var availableSubjects = [];
     if (subjectsResponse.ok) {
         const subjectsData = await subjectsResponse.json();
         availableSubjects = subjectsData.map(s => s.subjectCode);
@@ -51,7 +51,7 @@ async function loadEvent(){
     const staffResponse = await fetch("/getStaff", {
         credentials: "include"
     });
-    const avaliableStaff = [];
+    var avaliableStaff = [];
     if (staffResponse.ok) {
         const staffData = await staffResponse.json();
         avaliableStaff = staffData.map(s => s.email);
@@ -144,7 +144,7 @@ async function loadEvent(){
             <input type = "datetime-local" id = "endTime" name = "endTime" value = "${formatTime(eventData.endTime)}" ${disabledField}> 
         </div>
         <p id = "errorDisplay"></p>
-        <button id = "submitEvent" type = "button" onclick = "await submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
+        <button id = "submitEvent" type = "button" onclick = "submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
     `;
     if (mode === "add"){
         document.getElementById("eventIDContainer").remove();
@@ -172,15 +172,15 @@ async function submitForm(){
     const location = document.getElementById("eventLocation").value;
     const detailsShort = document.getElementById("detailsShort").value;
     const detailsLong = document.getElementById("detailsLong").value;
-    const staffAssigend = Array.from(document.getElementById("staffAssigned").selectedOptions.map(opt => opt.value));
+    const staffAssigned = Array.from(document.getElementById("staffAssigned").selectedOptions).map(opt => opt.value);
     const totalSpaces = document.getElementById("totalSpaces").value;
-    const releventSubjects = Array.from(document.getElementById("releventSubjects").selectedOptions.map(opt => opt.value));
+    const releventSubjects = Array.from(document.getElementById("releventSubjects").selectedOptions).map(opt => opt.value);
     const startTime = parseCustomDate(document.getElementById("startTime").value);
     const endTime = parseCustomDate(document.getElementById("endTime").value);
 
     //Check for issues with form if none send request to server.
     const errorDisplay = document.getElementById("errorDisplay");
-    if (!eventName || !location || !detailsShort || !detailsLong || isNan(totalSpaces) || isNaN(startTime) || isNaN(endTime)) {
+    if (!eventName || !location || !detailsShort || !detailsLong || isNaN(totalSpaces) || isNaN(startTime) || isNaN(endTime)) {
         errorDisplay.innerText = "One or more fields left blank.";
         return;
     }
@@ -194,7 +194,7 @@ async function submitForm(){
         location: location,
         detailsShort: detailsShort,
         detailsLong: detailsLong,
-        staffAssigend: staffAssigend,
+        staffAssigned: staffAssigned,
         studnetsSignedUp: studnetsSignedUp,
         totalSpaces: totalSpaces,
         releventSubjects: releventSubjects,
@@ -215,6 +215,9 @@ async function submitForm(){
     }
     //Success
     sessionStorage.eventMode = "view";
+    if (mode === "view") {
+        sessionStorage.eventID = result.event.eventID;
+    }
     await loadEvent();
     document.getElementById("errorDisplay").innerText = "Event " + (mode === "add" ? "created" : "updated") + " successfully.";
 }
