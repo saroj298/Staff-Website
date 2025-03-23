@@ -1,7 +1,7 @@
 const backgroundImages = [
-    "../../index/images/indexBackground1.jpg",
-    "../../index/images/indexBackground2.jpg",
-    "../../index/images/indexBackground3.jpg"
+    "/images/indexBackground1.jpg",
+    "/images/indexBackground2.jpg",
+    "/images/indexBackground3.jpg"
 ];
 let backgroundIndex = 0;
 

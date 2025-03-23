@@ -7,6 +7,8 @@
         <script src = "../../events/javascript/generateHtml.js"></script>
         <script src = "../../events/javascript/event.js"></script>
         <script src = "../../javascript/tokenVerificationHandler.js"></script>
+        <script src = "/javascript/backgroundCycle.js" type = "module"></script>
+        <script src = "/javascript/scaleHandler.js"></script>
         <link rel = "stylesheet" href = "../../events/styles/eventStyles.css">
         <link rel = "stylesheet" href = "../../styles/popupStyles.css">
     </head>
@@ -16,6 +18,9 @@
             <h1>Midland Developers</h1>
             <button onclick = "returnToAdminPanel()">Return to admin panel</button>
         </header>
+        <div id = "backgroundImage" class = "backgroundImage">
+            <div class = "backgroundTransition" style = "transition: opacity 0s ease; background-image: url('/images/indexBackground1.jpg'); opacity: 1;"></div>
+        </div>
         <section id = "switchButtons"></section>
         <section id = "event" class = "event"></section>
     </main>

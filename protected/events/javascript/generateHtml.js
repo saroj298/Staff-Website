@@ -89,62 +89,64 @@ async function loadEvent(){
     }
     const disabledField = mode === "view" ? "disabled" : "";
     document.getElementById("event").innerHTML = `
-        <div id = "eventIDContainer">
-            <label for = "eventID">Event ID:</label>
-            <input type = "number" id = "eventID" name = "eventID" value = "${eventData.eventID}" disabled>
-        </div>
-        <div>
-            <label for = "eventName">Event Name:</label>
-            <input type = "text" id = "eventName" name = "eventName" value = "${eventData.eventName}" ${disabledField}>
-        </div>
-        <div>
-            <label for = "eventLocation">Event Location:</label>
-            <input type = "text" id = "eventLocation" name = "eventLocation" value = "${eventData.location}" ${disabledField}>
-        </div>
-        <div>
-            <label for = "detailsShort">Short Details:</label>
-            <input type = "text" id = "detailsShort" name = "detailsShort" value = "${eventData.detailsShort}" ${disabledField}>
-        </div>
-        <div>
-            <label for = "detailsLong">Long Details:</label>
-            <textarea id="detailsLong" name="detailsLong" ${disabledField}>${eventData.detailsLong}</textarea>
-        </div>
-        <div>
-            <label for = "staffAssigned">Staff Assigned:</label>
-            <select id = "staffAssigned" name = "staffAssigned" multiple ${disabledField}>
-                ${avaliableStaff.map(staff => {
-                    const selected = (Array.isArray(eventData.staffAssigned) && eventData.staffAssigned.includes(staff)) ? "selected" : "";
-                    return `<option value = "${staff}" ${selected}>${staff}</option>`;
-                }).join("")}
-            </select>
-        </div>
-        <div id = "studentsSignedUpContainer">
-            <label for = "studentsSignedUp">Students Signed Up:</label>
-            <input type = "number" id = "studentsSignedUp" name = "studentsSignedUp" value = "${eventData.numberStudentsSignedUp}" disabled> 
-        </div>
-        <div>
-            <label for = "totalSpaces">Total Spaces:</label>
-            <input type = "number" id = "totalSpaces" name = "totalSpaces" value = "${eventData.totalSpaces}" ${disabledField}> 
-        </div>
-        <div>
-            <label for = "releventSubjects">Relevent Subjects:</label>
-            <select id = "releventSubjects" name = "releventSubjects" multiple ${disabledField}>
-                ${availableSubjects.map(subject => {
-                    const selected = (Array.isArray(eventData.releventSubjects) && eventData.releventSubjects.includes(subject)) ? "selected" : "";
-                    return `<option value = "${subject}" ${selected}>${subject}</option>`;
-                }).join("")}
-            </select>
-        </div>
-        <div>
-            <label for = "startTime">Start Time:</label>
-            <input type = "datetime-local" id = "startTime" name = "startTime" value = "${formatTime(eventData.startTime)}" ${disabledField}> 
-        </div>
-        <div>
-            <label for = "endTime">End Time:</label>
-            <input type = "datetime-local" id = "endTime" name = "endTime" value = "${formatTime(eventData.endTime)}" ${disabledField}> 
-        </div>
-        <p id = "errorDisplay"></p>
-        <button id = "submitEvent" type = "button" onclick = "submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
+        <form id = "eventForm">
+            <div id = "eventIDContainer" action autocomplete= "off">
+                <label for = "eventID">Event ID:</label>
+                <input type = "number" id = "eventID" name = "eventID" value = "${eventData.eventID}" disabled>
+            </div>
+            <div>
+                <label for = "eventName">Event Name:</label>
+                <input type = "text" id = "eventName" name = "eventName" value = "${eventData.eventName}" ${disabledField}>
+            </div>
+            <div>
+                <label for = "eventLocation">Event Location:</label>
+                <input type = "text" id = "eventLocation" name = "eventLocation" value = "${eventData.location}" ${disabledField}>
+            </div>
+            <div>
+                <label for = "detailsShort">Short Details:</label>
+                <input type = "text" id = "detailsShort" name = "detailsShort" value = "${eventData.detailsShort}" ${disabledField}>
+            </div>
+            <div>
+                <label for = "detailsLong">Long Details:</label>
+                <textarea id="detailsLong" name="detailsLong" ${disabledField}>${eventData.detailsLong}</textarea>
+            </div>
+            <div>
+                <label for = "staffAssigned">Staff Assigned:</label>
+                <select id = "staffAssigned" name = "staffAssigned" multiple ${disabledField}>
+                    ${avaliableStaff.map(staff => {
+                        const selected = (Array.isArray(eventData.staffAssigned) && eventData.staffAssigned.includes(staff)) ? "selected" : "";
+                        return `<option value = "${staff}" ${selected}>${staff}</option>`;
+                    }).join("")}
+                </select>
+            </div>
+            <div id = "studentsSignedUpContainer">
+                <label for = "studentsSignedUp">Students Signed Up:</label>
+                <input type = "number" id = "studentsSignedUp" name = "studentsSignedUp" value = "${eventData.numberStudentsSignedUp}" disabled> 
+            </div>
+            <div>
+                <label for = "totalSpaces">Total Spaces:</label>
+                <input type = "number" id = "totalSpaces" name = "totalSpaces" value = "${eventData.totalSpaces}" ${disabledField}> 
+            </div>
+            <div>
+                <label for = "releventSubjects">Relevent Subjects:</label>
+                <select id = "releventSubjects" name = "releventSubjects" multiple ${disabledField}>
+                    ${availableSubjects.map(subject => {
+                        const selected = (Array.isArray(eventData.releventSubjects) && eventData.releventSubjects.includes(subject)) ? "selected" : "";
+                        return `<option value = "${subject}" ${selected}>${subject}</option>`;
+                    }).join("")}
+                </select>
+            </div>
+            <div>
+                <label for = "startTime">Start Time:</label>
+                <input type = "datetime-local" id = "startTime" name = "startTime" value = "${formatTime(eventData.startTime)}" ${disabledField}> 
+            </div>
+            <div>
+                <label for = "endTime">End Time:</label>
+                <input type = "datetime-local" id = "endTime" name = "endTime" value = "${formatTime(eventData.endTime)}" ${disabledField}> 
+            </div>
+            <p id = "errorDisplay"></p>
+            <button id = "submitEvent" type = "button" onclick = "submitForm()">${mode === "add" ? "Create Event" : "Update Event"}</button>
+        </form>
     `;
     if (mode === "add"){
         document.getElementById("eventIDContainer").remove();

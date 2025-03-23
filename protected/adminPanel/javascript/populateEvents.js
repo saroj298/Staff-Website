@@ -44,13 +44,15 @@ function populateEvents(eventsData) {
         <p>${event.staffAssigned.join(", ")}</p>
         <p>${event.numberStudentsSignedUp}</p>
         <p>${event.totalSpaces}</p>
-        <p>${event.releventSubjects}</p>
+        <p>${event.releventSubjects.join(", ")}</p>
         <p>${formatTime(event.startTime)}</p>
         <p>${formatTime(event.endTime)}</p>
-        <button onclick = "viewEvent(`+event.eventID+`)">View</button>
-        <button onclick = "editEvent(`+event.eventID+`)">Edit</button>
-        <button onclick = "removeEvent(`+event.eventID+`)">Remove</button>
-        `;
+        <div class="event-buttons">
+          <button class="view-btn" onclick="viewEvent(${event.eventID})">View</button>
+          <button class="edit-btn" onclick="editEvent(${event.eventID})">Edit</button>
+          <button class="remove-btn" onclick="removeEvent(${event.eventID})">Remove</button>
+        </div>
+    `;    
         eventsContainer.appendChild(eventDiv);
     });
 }

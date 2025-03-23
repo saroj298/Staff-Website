@@ -8,6 +8,8 @@
         <script src = "../../adminPanel/javascript/accountCreationTokens.js"></script>
         <script src = "../../adminPanel/javascript/populateEvents.js"></script>
         <script src = "../../javascript/tokenVerificationHandler.js"></script>
+        <script src = "/javascript/backgroundCycle.js" type = "module"></script>
+        <script src = "/javascript/scaleHandler.js"></script>
         <link rel = "stylesheet" href = "../../adminPanel/styles/adminPanelStyles.css">
         <link rel = "stylesheet" href = "../../styles/popupStyles.css">
     </head>
@@ -15,10 +17,13 @@
         <div id = "signoutCountdownPopup" class = "popup"></div>
         <div id = "createAccountTokenPopup" class = "popup"></div>
         <header class = "topdisplay">
-            <h1>Midland Developers</h1>
             <button onclick = "signOut()">Sign Out</button>
+            <h1>Midland Developers</h1>
             <button onclick ="generateAccountCreationToken();">Generate Account Creation Token</button>
         </header>
+        <div id = "backgroundImage" class = "backgroundImage">
+            <div class = "backgroundTransition" style = "transition: opacity 0s ease; background-image: url('/images/indexBackground1.jpg'); opacity: 1;"></div>
+        </div>
         <button onclick = "addEvent()">Add Event</button>
         <section id = "events" class = "events"></section>
     </main>
