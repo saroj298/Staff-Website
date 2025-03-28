@@ -10,6 +10,67 @@ const cookieParser = require("cookie-parser");
 const argon2 = require("argon2");
 const session = require("express-session");
 
+// for db
+const mysql = require('mysql2');
+const createStaffTable = require('./CreateDB/staff');
+const createStaffAccountCreationTokensTable = require('./CreateDB/staffAccountCreationTokens');
+const createSubjectsTable = require('./CreateDB/subjects');
+const createStudentsTable = require('./CreateDB/students');
+const createEventsTable = require('./CreateDB/events');
+
+require('dotenv').config();
+
+// Database connection
+const db = mysql.createConnection({
+    host: process.env.DB_HOST ,
+    user: process.env.DB_USER ,
+    password: process.env.DB_PASSWORD ,
+    database: process.env.DB_NAME 
+});
+// Connect to the database
+db.connect(err => {
+    if (err) {
+        console.error('Database connection failed:', err);
+        return;
+    }
+    console.log('Connected to MySQL database');
+});
+
+// Execute SQL queries for creating tables
+db.query(createStaffTable, (err, results) => {
+    if (err) throw err;
+    console.log('Staff table created or already exists');
+});
+  
+db.query(createStaffAccountCreationTokensTable, (err, results) => {
+    if (err) throw err;
+    console.log('StaffAccountCreationTokens table created or already exists');
+});
+  
+db.query(createSubjectsTable, (err, results) => {
+    if (err) throw err;
+    console.log('Subjects table created or already exists');
+});
+  
+db.query(createStudentsTable, (err, results) => {
+    if (err) throw err;
+    console.log('Students table created or already exists');
+});
+  
+db.query(createEventsTable, (err, results) => {
+    if (err) throw err;
+    console.log('Events table created or already exists');
+});
+  
+// Close connection
+db.end((err) => {
+    if (err) {
+      console.error('Error closing the connection: ' + err.stack);
+    } else {
+      console.log('Connection closed');
+    }
+});
+
 //Import functions from generateKeys.js
 const {generateSessionKeys} = require("./generateKeys.js")
 
